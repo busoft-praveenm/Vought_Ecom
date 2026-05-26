@@ -3,6 +3,10 @@ import { AppModule } from './app.module';
 
 async function startapp() {
   const app = await NestFactory.create(AppModule);
+  app.enableCors({
+    origin: true,
+    credentials: true,
+  });
   const port = process.env.port ?? 8080
   await app.listen(port);
   console.log(`Listening on port: ${port}`)
