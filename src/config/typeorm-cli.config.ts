@@ -11,7 +11,8 @@ export default new DataSource({
   username: process.env.MY_SQL_DB_USER,
   password: process.env.MY_SQL_DB_PASS,
   database: process.env.MY_SQL_DB_NAME,
-  entities: [__dirname + "/**/*.entity.{js,ts}"],
+  entities: [__dirname + "/../**/*.entity.{js,ts}"],
+  migrations: [__dirname + "/../migrations/*{.ts,.js}"],
   synchronize: false,
   namingStrategy: new SnakeNamingStrategy(),
 });

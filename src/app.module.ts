@@ -1,14 +1,14 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ApiModule } from './apis/api.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { databaseConfig } from './config/database.config';
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { DbServicesModule } from './common/db-services/db-services.module';
+import { AuthModule } from './apis/auth/auth.module';
 
 @Module({
   imports: [
-    ApiModule,
     ConfigModule.forRoot({
       isGlobal: true,
       load: [
@@ -20,8 +20,11 @@ import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
       useFactory: (configService: ConfigService) => configService.get<TypeOrmModuleOptions>('database')!,
       inject:[ConfigService],
     }),
+    DbServicesModule,
+    AuthModule
   ],
   controllers: [AppController],
   providers: [AppService],
+  exports: []
 })
 export class AppModule {}

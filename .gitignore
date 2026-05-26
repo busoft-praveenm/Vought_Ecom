@@ -63,3 +63,6 @@ report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+# secret files
+firebase-service-account.json
