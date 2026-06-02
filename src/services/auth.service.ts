@@ -21,16 +21,6 @@ export async function fireBaseLogin ( firebaseToken: string ){
     );
   }
 
-  Cookies.set(
-    'firebase_token',
-    firebaseToken,
-    {
-      expires: 1,
-      secure: true,
-      sameSite: 'strict'
-    }
-  );
-
   return data;
 
 }
