@@ -1,6 +1,6 @@
 import { Controller, Get, Injectable, Query, UseGuards } from "@nestjs/common";
 import { ProductsService } from "./products.service";
-import { FirebaseAuthService } from "@/guards/firebase.auth.guard";
+import { FirebaseAuthGuard } from "@/guards/firebase.auth.guard";
 
 
 @Controller('products')
@@ -10,7 +10,7 @@ export class ProductsController {
     private readonly productsService: ProductsService,
   ){}
 
-  @UseGuards(FirebaseAuthService)
+  @UseGuards(FirebaseAuthGuard)
   @Get()
   async getProducts(
     @Query('page') page = '1',

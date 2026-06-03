@@ -1,6 +1,6 @@
 import { UserDbService } from "@/common/db-services/user-db.service";
 import { UserDb } from "@/common/entities/tbl_user.entity";
-import { FirebaseAuthService } from "@/guards/firebase.auth.guard";
+import { FirebaseAuthGuard } from "@/guards/firebase.auth.guard";
 import { Injectable, UnauthorizedException } from "@nestjs/common";
 import {v4 as uuidv4} from "uuid";
 
@@ -9,7 +9,7 @@ export class AuthService {
 
   constructor(
     private readonly userDbService: UserDbService,
-    private readonly fireBaseAuthService: FirebaseAuthService
+    private readonly fireBaseAuthGuard: FirebaseAuthGuard
   ){}
 
   async fireBaseLogin(
@@ -21,7 +21,7 @@ export class AuthService {
         throw new UnauthorizedException('Missing token');
       }
 
-      const decoded = await this.fireBaseAuthService.verifyToken(token);
+      const decoded = await this.fireBaseAuthGuard.verifyToken(token);
 
       let user = await this.userDbService.findByFirebaseUid(decoded.uid);
       console.log('user: ', user)
