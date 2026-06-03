@@ -15,6 +15,7 @@ import { signOut } from 'firebase/auth';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import PowerSettingsNewIcon from '@mui/icons-material/PowerSettingsNew';
+import { fireBaseLogout } from '@/services/auth.service';
 
 const Topbar = () => {
   const router = useRouter();
@@ -25,7 +26,8 @@ const Topbar = () => {
       await signOut(auth);
 
       // Remove token cookie
-      Cookies.remove('firebase_token');
+      // Cookies.remove('firebase_token');
+      await fireBaseLogout();
 
       // Redirect
       router.push('/login');

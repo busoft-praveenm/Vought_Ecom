@@ -1,33 +1,39 @@
 'use client'
 
+import { useToaster } from "@/components/toaster/ToasterProvider";
+import { ProductApiResponse } from "@/services/product.service";
 import { Box, Card, CardContent, Chip, Container, Grid, Pagination, Stack, Typography } from "@mui/material";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-
-interface Product {
-  id: number;
-  name: string;
-  sku: string;
-  price: string;
-  stock: string;
-  category: string;
-  brand: string;
-  imageUrl: string;
-}
+import { useEffect } from "react";
 
 interface Props {
-  products: Product[];
-  pagination: {
-    page: number;
-    limit: number;
-    total: number;
-    totalPages: number;
-  };
+  productsData: ProductApiResponse
 }
 
-const DashboardClient =({ products, pagination }: Props)=>{
+const DashboardClient =({ productsData }: Props)=>{
 
   const router = useRouter();
+  const { showToast } = useToaster();
+
+  useEffect(() => {
+    if ( 'success' in productsData && productsData.success === false ) {
+      showToast( productsData.error, 'error');
+    }
+  }, [ productsData, showToast]);
+
+  // prevent crash
+  if ( 'success' in productsData && productsData.success === false ) {
+    return (
+      <Container sx={{ py: 4 }}>
+        <Typography variant="h5">
+          Could not load products
+        </Typography>
+      </Container>
+    );
+  }
+
+  const { results: products, pagination } = productsData;
 
   return (
     <Container maxWidth='xl' sx={{ py: 4 }}>

@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import MuiProvider from '@/providers/MuiProvider';
 import { Poppins, Dancing_Script } from 'next/font/google';
+import { ToasterProvider } from '@/components/toaster/ToasterProvider';
 
 export const metadata: Metadata = {
   title: 'Vought International',
@@ -21,7 +22,9 @@ export default function RootLayout({
     <html lang="en" style={{ height: '100%' }}>
       <body className={poppins.className} style={{ margin: 0, padding: 0, minHeight: '100vh', overflow: 'hidden' }}>
         <MuiProvider>
-          {children}
+          <ToasterProvider>
+            {children}
+          </ToasterProvider>
         </MuiProvider>
       </body>
     </html>

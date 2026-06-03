@@ -1,4 +1,9 @@
-import { apiService } from "./api.service";
+import { serverApiService } from "./server-api.service";
+
+export interface ApiErrorResponse {
+  success: false;
+  error: string;
+}
 
 export interface Product {
   id: number;
@@ -11,8 +16,11 @@ export interface Product {
   imageUrl: string;
 }
 
-export interface ProductResponse {
+export interface ProductSuccessResponse {
+  success?: true;
+
   results: Product[];
+
   pagination: {
     page: number;
     limit: number;
@@ -21,12 +29,16 @@ export interface ProductResponse {
   };
 }
 
+export type ProductApiResponse =
+  | ProductSuccessResponse
+  | ApiErrorResponse;
+
 export const getProducts=async (
   page = 1,
   limit = 12,
   search = ''
 )=>{
-  const result =  apiService.get<ProductResponse>(
+  const result =  serverApiService.get<ProductApiResponse>(
     `/products`,
     {
       page,
