@@ -1,3 +1,4 @@
+import { ProductsDb } from "@/common/entities/tbl_products.entity";
 import { UserDb } from "@/common/entities/tbl_user.entity";
 import { registerAs } from "@nestjs/config";
 import { TypeOrmModuleOptions } from "@nestjs/typeorm";
@@ -13,7 +14,7 @@ export const databaseConfig = registerAs(
     username: process.env.MY_SQL_DB_USER,
     password: process.env.MY_SQL_DB_PASS,
     database: process.env.MY_SQL_DB_NAME,
-    entities: [UserDb],
+    entities: [UserDb, ProductsDb],
     synchronize: false,
     namingStrategy: new SnakeNamingStrategy(),
   })
