@@ -29,10 +29,11 @@ type Product = {
 export default async function ProductsPage({
   searchParams,
 }: {
-  searchParams: { page?: string; search?: string };
+  searchParams: Promise<{ page?: string; search?: string }>;
 }) {
-  const page = Number(searchParams.page) || 1;
-  const search = searchParams.search || "";
+  const params = await searchParams;
+  const page = Number(params.page) || 1;
+  const search = params.search || "";
   
   let products: Product[] = [];
   let totalPages = 1;
@@ -65,7 +66,7 @@ export default async function ProductsPage({
 
   // Handle fallback data on the server if the fetch failed (to preserve UI showcase)
   if (fetchError || products.length === 0) {
-    products = [
+    const allFallbackProducts = [
       { id: "1", name: "Premium Wireless Headphones - Noise Cancelling", price: 299.99, stock: 45, category: "Electronics", status: "Active", rating: 4.5, reviews: 128 },
       { id: "2", name: "Ergonomic Office Chair with Lumbar Support", price: 199.50, stock: 12, category: "Furniture", status: "Low Stock", rating: 4.2, reviews: 56 },
       { id: "3", name: "Mechanical Gaming Keyboard - RGB Backlit", price: 149.00, stock: 0, category: "Electronics", status: "Out of Stock", rating: 4.8, reviews: 342 },
@@ -74,7 +75,12 @@ export default async function ProductsPage({
       { id: "6", name: "Portable Bluetooth Speaker - Waterproof", price: 59.99, stock: 150, category: "Electronics", status: "Active", rating: 4.4, reviews: 215 },
       { id: "7", name: "Stainless Steel Water Bottle 32oz", price: 24.50, stock: 300, category: "Accessories", status: "Active", rating: 4.9, reviews: 890 },
       { id: "8", name: "Yoga Mat with Alignment Lines", price: 35.00, stock: 5, category: "Fitness", status: "Low Stock", rating: 4.3, reviews: 104 },
+      { id: "9", name: "Smartphone Gimbal Stabilizer", price: 89.99, stock: 34, category: "Electronics", status: "Active", rating: 4.5, reviews: 72 },
+      { id: "10", name: "Resistance Bands Set (11pcs)", price: 19.99, stock: 210, category: "Fitness", status: "Active", rating: 4.1, reviews: 320 }
     ];
+    
+    // Simulate pagination for fallback data (each page gets 10 items, but we modify IDs so it looks different)
+    products = allFallbackProducts.map(p => ({ ...p, id: `${p.id}-p${page}` }));
     totalPages = 5;
   }
 
