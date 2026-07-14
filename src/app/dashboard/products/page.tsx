@@ -80,7 +80,11 @@ export default async function ProductsPage({
     ];
     
     // Simulate pagination for fallback data (each page gets 10 items, but we modify IDs so it looks different)
-    products = allFallbackProducts.map(p => ({ ...p, id: `${p.id}-p${page}` }));
+    products = allFallbackProducts.map((p, index) => ({ 
+      ...p, 
+      id: `${p.id}-p${page}`,
+      imageUrl: `https://picsum.photos/400?random=${page}-${index}` 
+    }));
     totalPages = 5;
   }
 
@@ -119,11 +123,20 @@ export default async function ProductsPage({
           {products.map((product) => (
             <Card key={product.id} className="group overflow-hidden flex flex-col hover:shadow-lg transition-all border-border/50 bg-card hover:border-primary/50 cursor-pointer">
               <div className="relative w-full aspect-square bg-muted/30 overflow-hidden p-4 flex items-center justify-center">
-                <div className="w-full h-full bg-secondary/50 rounded-md flex items-center justify-center text-muted-foreground group-hover:scale-105 transition-transform duration-300">
-                   <span className="text-xs uppercase tracking-widest">{product.category}</span>
-                </div>
+                {product.imageUrl ? (
+                  <img 
+                    src={product.imageUrl} 
+                    alt={product.name}
+                    className="w-full h-full object-cover rounded-md group-hover:scale-105 transition-transform duration-300 shadow-sm"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-secondary/50 rounded-md flex items-center justify-center text-muted-foreground group-hover:scale-105 transition-transform duration-300">
+                    <span className="text-xs uppercase tracking-widest">{product.category}</span>
+                  </div>
+                )}
+                
                 {product.status !== 'Active' && (
-                  <span className={`absolute top-2 right-2 px-2 py-1 text-[10px] font-bold uppercase rounded-sm ${
+                  <span className={`absolute top-2 right-2 z-10 px-2 py-1 text-[10px] font-bold uppercase rounded-sm ${
                     product.status === 'Out of Stock' ? 'bg-destructive text-destructive-foreground' : 'bg-yellow-500 text-white'
                   }`}>
                     {product.status}

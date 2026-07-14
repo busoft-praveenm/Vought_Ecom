@@ -14,10 +14,10 @@ const Toaster = ({ ...props }: ToasterProps) => {
       className="toaster group"
       icons={{
         success: (
-          <CircleCheckIcon className="size-4" />
+          <CircleCheckIcon className="size-4 text-black" />
         ),
         info: (
-          <InfoIcon className="size-4" />
+          <InfoIcon className="size-4 text-black" />
         ),
         warning: (
           <TriangleAlertIcon className="size-4" />
@@ -41,6 +41,8 @@ const Toaster = ({ ...props }: ToasterProps) => {
         classNames: {
           toast: "cn-toast",
           error: "!bg-red-500 !text-white !border-red-600 !shadow-lg",
+          success: "!bg-green-500 !text-black !border-green-600 !shadow-lg",
+          info: "!bg-yellow-200 !text-black !border-yellow-300 !shadow-lg",
         },
       }}
       {...props}

@@ -44,7 +44,6 @@ export function LoginForm() {
         throw new Error("Backend authentication failed");
       }
       
-      toast.success("Successfully signed in!");
       // Redirect to dashboard
       router.push("/dashboard");
     } catch (err: any) {

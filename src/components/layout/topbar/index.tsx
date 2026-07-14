@@ -33,32 +33,32 @@ export const Topbar = () => {
   };
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b bg-background/80 backdrop-blur-md px-4 sm:px-6 shadow-sm">
+    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-zinc-800 bg-[#494F55] backdrop-blur-md px-4 sm:px-6 shadow-sm">
       <div className="flex items-center gap-4">
         <form className="hidden sm:flex relative">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-zinc-500" />
           <Input
             type="search"
             placeholder="Search products..."
-            className="w-full appearance-none bg-background pl-8 shadow-none md:w-2/3 lg:w-[300px] rounded-full transition-all hover:bg-muted/50 focus:bg-background"
+            className="w-full appearance-none bg-zinc-900 border-zinc-800 text-zinc-200 placeholder:text-zinc-500 pl-8 shadow-none md:w-2/3 lg:w-[300px] rounded-full transition-all hover:bg-zinc-800 focus:bg-zinc-900 focus:border-zinc-700 focus:ring-1 focus:ring-zinc-700"
           />
         </form>
       </div>
       <div className="flex items-center gap-2">
-        <Button variant="ghost" size="icon" className="rounded-full text-muted-foreground hover:text-foreground">
+        <Button variant="ghost" size="icon" className="rounded-full text-zinc-400 hover:text-zinc-50 hover:bg-zinc-800/50">
           <Bell className="h-5 w-5" />
           <span className="sr-only">Notifications</span>
         </Button>
-        <Button variant="ghost" size="icon" className="rounded-full text-muted-foreground hover:text-foreground">
+        <Button variant="ghost" size="icon" className="rounded-full text-zinc-400 hover:text-zinc-50 hover:bg-zinc-800/50">
           <Settings className="h-5 w-5" />
           <span className="sr-only">Settings</span>
         </Button>
-        
+
         <div className="ml-2 flex items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger render={
-              <Button variant="secondary" size="icon" className="rounded-full overflow-hidden bg-primary/10 cursor-pointer">
-                <User className="h-5 w-5 text-primary" />
+              <Button variant="secondary" size="icon" className="rounded-full overflow-hidden bg-primary/10 hover:bg-primary/20 border border-primary/20 cursor-pointer">
+                <User className="h-5 w-5 text-zinc-50" />
                 <span className="sr-only">User Profile</span>
               </Button>
             } />
