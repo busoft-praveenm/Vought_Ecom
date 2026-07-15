@@ -40,7 +40,7 @@ export class AuthService {
           lastName,
           provider: decoded.firebase?.sign_in_provider,
           photoUrl: decoded.picture,
-          role: 'user'
+          role: { id: 2 } as any
         });
       }
 

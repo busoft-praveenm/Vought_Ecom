@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, ManyToOne, JoinColumn } from "typeorm";
+import { RoleDb } from "./tbl_role.entity";
 
 export enum UserStatus {
   "ACTIVE"="active",
@@ -27,8 +28,12 @@ export class UserDb {
   @Column({ nullable: true })
   lastName: string;
 
-  @Column({ nullable: true })
-  role: string;
+  @Column({ name: 'role_id', nullable: true, insert: false, update: false })
+  roleId: number;
+
+  @ManyToOne(() => RoleDb, role => role.users, { nullable: true, eager: true })
+  @JoinColumn({ name: 'role_id' })
+  role: RoleDb;
 
   @Column({ nullable: true })
   provider: string;

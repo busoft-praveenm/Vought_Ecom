@@ -26,18 +26,12 @@ export class UserDbService {
   }
 
   async createUser(data: Partial<UserDb>):Promise<UserDb>{
-    const result = await this.userRepo
-      .createQueryBuilder()
-      .insert()
-      .into(UserDb)
-      .values({
-        ...data,
-        status: data.status ?? UserStatus.ACTIVE
-      })
-      .execute();
-
-      const insertedId = result.identifiers[0].id;
-      return this.findById(insertedId);
+    const newUser = this.userRepo.create({
+      ...data,
+      status: data.status ?? UserStatus.ACTIVE
+    });
+    const savedUser = await this.userRepo.save(newUser);
+    return this.findById(savedUser.id);
   }
 
   async findByFirebaseUid(firebaseUid: string):Promise<UserDb | null>{

@@ -1,5 +1,6 @@
 import { Module } from "@nestjs/common";
 import { UserDb } from "../entities/tbl_user.entity";
+import { RoleDb } from "../entities/tbl_role.entity";
 import { UserDbService } from "./user-db.service";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { ProductsDb } from "../entities/tbl_products.entity";
@@ -17,7 +18,8 @@ import { CartDbService } from "./cart-db.service";
       ProductsDb,
       ProductReviewDb,
       CartDb,
-      CartItemDb
+      CartItemDb,
+      RoleDb
     ])
   ],
   providers: [
