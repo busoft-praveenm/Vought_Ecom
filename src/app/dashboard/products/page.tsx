@@ -22,8 +22,9 @@ type Product = {
   category: string;
   status: string;
   imageUrl?: string;
-  rating?: number;
+  averageRating?: number;
   reviews?: number;
+  currency?: string;
 };
 
 export default async function ProductsPage({
@@ -43,6 +44,7 @@ export default async function ProductsPage({
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_BASE_URL || 'http://localhost:8080';
     const cookieStore = await cookies();
     const token = cookieStore.get("access_token")?.value;
+    console.log("Token in ProductsPage:", token ? "Token Exists" : "No Token");
 
     const res = await fetch(`${backendUrl}/products?page=${page}&limit=10&search=${encodeURIComponent(search)}`, {
       headers: {
@@ -56,37 +58,16 @@ export default async function ProductsPage({
       fetchError = true;
     } else {
       const data = await res.json();
-      products = data.items || [];
-      totalPages = data.meta?.totalPages || 1;
+      products = data.results || [];
+      totalPages = data.pagination?.totalPages || 1;
     }
   } catch (error) {
     console.error("Network error fetching products:", error);
     fetchError = true;
   }
 
-  // Handle fallback data on the server if the fetch failed (to preserve UI showcase)
-  if (fetchError || products.length === 0) {
-    const allFallbackProducts = [
-      { id: "1", name: "Premium Wireless Headphones - Noise Cancelling", price: 299.99, stock: 45, category: "Electronics", status: "Active", rating: 4.5, reviews: 128 },
-      { id: "2", name: "Ergonomic Office Chair with Lumbar Support", price: 199.50, stock: 12, category: "Furniture", status: "Low Stock", rating: 4.2, reviews: 56 },
-      { id: "3", name: "Mechanical Gaming Keyboard - RGB Backlit", price: 149.00, stock: 0, category: "Electronics", status: "Out of Stock", rating: 4.8, reviews: 342 },
-      { id: "4", name: "Smart Watch Series 5 - Fitness Tracker", price: 399.00, stock: 89, category: "Wearables", status: "Active", rating: 4.6, reviews: 89 },
-      { id: "5", name: "4K Ultra HD Smart TV 55-inch", price: 549.99, stock: 23, category: "Electronics", status: "Active", rating: 4.7, reviews: 412 },
-      { id: "6", name: "Portable Bluetooth Speaker - Waterproof", price: 59.99, stock: 150, category: "Electronics", status: "Active", rating: 4.4, reviews: 215 },
-      { id: "7", name: "Stainless Steel Water Bottle 32oz", price: 24.50, stock: 300, category: "Accessories", status: "Active", rating: 4.9, reviews: 890 },
-      { id: "8", name: "Yoga Mat with Alignment Lines", price: 35.00, stock: 5, category: "Fitness", status: "Low Stock", rating: 4.3, reviews: 104 },
-      { id: "9", name: "Smartphone Gimbal Stabilizer", price: 89.99, stock: 34, category: "Electronics", status: "Active", rating: 4.5, reviews: 72 },
-      { id: "10", name: "Resistance Bands Set (11pcs)", price: 19.99, stock: 210, category: "Fitness", status: "Active", rating: 4.1, reviews: 320 }
-    ];
-    
-    // Simulate pagination for fallback data (each page gets 10 items, but we modify IDs so it looks different)
-    products = allFallbackProducts.map((p, index) => ({ 
-      ...p, 
-      id: `${p.id}-p${page}`,
-      imageUrl: `https://picsum.photos/400?random=${page}-${index}` 
-    }));
-    totalPages = 5;
-  }
+  // Fallback data removed per user request. 
+  // If the API fails or returns no data, we will just show the empty state.
 
   const createPageUrl = (pageNumber: number) => {
     const params = new URLSearchParams();
@@ -110,7 +91,7 @@ export default async function ProductsPage({
 
       {fetchError && (
         <div className="mb-4 p-4 rounded-md bg-destructive/10 text-destructive border border-destructive/20 text-sm">
-          Failed to fetch real data from the backend. Displaying fallback data instead.
+          Failed to load products from the server. Please try logging in again.
         </div>
       )}
 
@@ -155,7 +136,7 @@ export default async function ProductsPage({
                       <Star 
                         key={i} 
                         className={`w-3.5 h-3.5 ${
-                          i < Math.floor(product.rating || 4) 
+                          i < Math.floor(product.averageRating || 0) 
                             ? "fill-orange-400 text-orange-400" 
                             : "fill-muted text-muted"
                         }`} 
@@ -163,13 +144,15 @@ export default async function ProductsPage({
                     ))}
                   </div>
                   <span className="text-xs text-muted-foreground ml-1">
-                    ({product.reviews || 0})
+                    ({product.averageRating ? Number(product.averageRating).toFixed(1) : "0.0"})
                   </span>
                 </div>
                 
                 <div className="mt-auto pt-3 flex items-end justify-between">
                   <div className="flex flex-col">
-                    <span className="text-xl font-bold">${product.price.toFixed(2)}</span>
+                    <span className="text-xl font-bold">
+                      {product.currency === 'INR' ? '₹' : '$'}{Number(product.price).toFixed(2)}
+                    </span>
                     <span className="text-[10px] text-muted-foreground mt-0.5">In stock: {product.stock}</span>
                   </div>
                 </div>
