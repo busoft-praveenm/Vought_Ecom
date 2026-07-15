@@ -10,16 +10,16 @@ export class FirebaseAuthGuard implements CanActivate {
     try{
       const request = context.switchToHttp().getRequest<Request>();
       const token = request.cookies?.access_token;
-      console.log('guard request: ', request)
+      // console.log('guard request: ', request)
       if (!token) {
         throw new UnauthorizedException(
           'Missing token'
         );
       }
 
-      console.log(
-        'entering decode token'
-      );
+      // console.log(
+      //   'entering decode token'
+      // );
 
       const decodedToken =
         await admin
@@ -28,17 +28,17 @@ export class FirebaseAuthGuard implements CanActivate {
             token
           );
 
-      console.log(
-        'decodedToken:',
-        decodedToken
-      );
+      // console.log(
+      //   'decodedToken:',
+      //   decodedToken
+      // );
 
       request['user'] =
         decodedToken;
 
       return true;
     }catch(error){
-      console.error('Firebase verifyToken failed: ', error)
+      // console.error('Firebase verifyToken failed: ', error)
       throw new UnauthorizedException('Invalid firebase token');
     }
   }

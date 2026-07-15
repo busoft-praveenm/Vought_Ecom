@@ -13,5 +13,8 @@ export class ProductsService {
     return this.productsDbService.getProducts(page, limit, search);
   }
 
+  async getProduct(id: number){
+    return this.productsDbService.getProductWithReviews(id);
+  }
 
 }

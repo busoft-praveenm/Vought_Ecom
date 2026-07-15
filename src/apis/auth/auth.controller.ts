@@ -17,9 +17,9 @@ export class AuthController {
   ){
     
     const token = authHeader?.replace('Bearer ', '');
-    console.log('login firebase entered: ', token);
+    // console.log('login firebase entered: ', token);
     const result = await this.authService.fireBaseLogin(token);
-    console.log('result firebaselogin: ', result);
+    // console.log('result firebaselogin: ', result);
     response.cookie(
       'access_token',
       token,
@@ -44,16 +44,16 @@ export class AuthController {
     @Req() request: Request,
     @Res({passthrough: true}) response: Response
   ){
-    console.log(
-    'cookies:',
-    request.cookies
-  );
+  //   console.log(
+  //   'cookies:',
+  //   request.cookies
+  // );
 
-  console.log(
-    'access_token:',
-    request.cookies
-      ?.access_token
-  );
+  // console.log(
+  //   'access_token:',
+  //   request.cookies
+  //     ?.access_token
+  // );
     response.clearCookie(
       'access_token',
       {

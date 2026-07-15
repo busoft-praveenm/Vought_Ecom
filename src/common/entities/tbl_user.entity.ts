@@ -9,7 +9,7 @@ export enum UserStatus {
 @Entity('tbl_user')
 export class UserDb {
 
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn('increment', { type: 'int' })
   id: number;
 
   @Column({ unique: true })

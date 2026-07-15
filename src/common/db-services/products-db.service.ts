@@ -86,7 +86,27 @@ export class ProductsDbService {
           ),
       },
     };
-
   }
+  
+  async getProductWithReviews(id: number) {
+    const product = await this.productRepo
+      .createQueryBuilder('product')
+      .where('product.id = :id', { id })
+      .andWhere('product.isDeleted = :isDeleted', { isDeleted: false })
+      .getOne();
 
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+
+    const reviews = await this.productRepo.manager
+      .createQueryBuilder('ProductReviewDb', 'review')
+      .leftJoinAndSelect('review.user', 'user')
+      .where('review.product = :id', { id })
+      .orderBy('review.createdAt', 'DESC')
+      .take(10)
+      .getMany();
+
+    return { product, reviews };
+  }
 }

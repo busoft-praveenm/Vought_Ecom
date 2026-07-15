@@ -24,7 +24,7 @@ export class AuthService {
       const decoded = await this.fireBaseAuthGuard.verifyToken(token);
 
       let user = await this.userDbService.findByFirebaseUid(decoded.uid);
-      console.log('user: ', user)
+      // console.log('user: ', user)
       if(!user){
 
         const fullName = decoded.name?.trim() || '';
