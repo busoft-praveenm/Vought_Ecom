@@ -42,6 +42,12 @@ export class ProductsDb {
   @Column({ type: "enum", enum: ProductStatus, default: ProductStatus.ACTIVE })
   status: ProductStatus;
 
+  @Column({ default: 'INR' })
+  currency: string;
+
+  @Column({ type: 'decimal', precision: 3, scale: 2, default: 0 })
+  averageRating: number;
+
   @Column({ type: 'boolean', default: true })
   isActive: boolean;
 

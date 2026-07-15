@@ -4,19 +4,27 @@ import { UserDbService } from "./user-db.service";
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { ProductsDb } from "../entities/tbl_products.entity";
 import { ProductsDbService } from "./products-db.service";
+import { ProductReviewDb } from "../entities/tbl_product_review.entity";
+import { ReviewsDbService } from "./reviews-db.service";
 
 @Module({
   imports:[
     TypeOrmModule.forFeature([
       UserDb,
-      ProductsDb
+      ProductsDb,
+      ProductReviewDb
     ])
   ],
-  providers: [UserDbService, ProductsDbService],
+  providers: [
+    UserDbService, 
+    ProductsDbService, 
+    ReviewsDbService
+  ],
   exports: [
     TypeOrmModule,
     UserDbService,
-    ProductsDbService
+    ProductsDbService,
+    ReviewsDbService
   ]
 })
 export class DbServicesModule{}

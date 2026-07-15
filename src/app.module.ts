@@ -7,6 +7,7 @@ import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
 import { DbServicesModule } from './common/db-services/db-services.module';
 import { AuthModule } from './apis/auth/auth.module';
 import { ProductsModule } from './apis/products/products.module';
+import { ReviewsModule } from './apis/reviews/reviews.module';
 
 @Module({
   imports: [
@@ -23,7 +24,8 @@ import { ProductsModule } from './apis/products/products.module';
     }),
     DbServicesModule,
     AuthModule,
-    ProductsModule
+    ProductsModule,
+    ReviewsModule
   ],
   controllers: [AppController],
   providers: [AppService],
