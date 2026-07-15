@@ -42,7 +42,7 @@ export default async function ProductsPage({
   let fetchError = false;
 
   try {
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_BASE_URL || 'http://localhost:8080';
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_BASE_URL;
     const cookieStore = await cookies();
     const token = cookieStore.get("access_token")?.value;
     console.log("Token in ProductsPage:", token ? "Token Exists" : "No Token");
@@ -118,13 +118,15 @@ export default async function ProductsPage({
                     </div>
                   )}
                   
-                  {product.status !== 'Active' && (
-                    <span className={`absolute top-2 right-2 z-10 px-2 py-1 text-[10px] font-bold uppercase rounded-sm ${
-                      product.status === 'Out of Stock' ? 'bg-destructive text-destructive-foreground' : 'bg-yellow-500 text-white'
-                    }`}>
-                      {product.status}
+                  {product.stock === 0 ? (
+                    <span className="absolute top-2 right-2 z-10 px-2 py-1 text-[10px] font-bold uppercase rounded-sm bg-destructive text-destructive-foreground">
+                      Out of Stock
                     </span>
-                  )}
+                  ) : product.stock < 20 ? (
+                    <span className="absolute top-2 right-2 z-10 px-2 py-1 text-[10px] font-bold uppercase rounded-sm bg-red-500 text-white shadow-sm">
+                      Low Stock
+                    </span>
+                  ) : null}
                 </div>
                 
                 <CardContent className="p-4 flex-1 flex flex-col">

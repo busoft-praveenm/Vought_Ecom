@@ -48,7 +48,10 @@ function PaginationLink({
     <Button
       variant={isActive ? "outline" : "ghost"}
       size={size}
-      className={cn(className)}
+      className={cn(
+        isActive && "bg-black text-white border-black hover:bg-black/90 hover:text-white", 
+        className
+      )}
       nativeButton={false}
       data-slot="pagination-link"
       render={

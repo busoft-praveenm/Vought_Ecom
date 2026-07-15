@@ -35,7 +35,7 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
   const cookieStore = await cookies();
   const token = cookieStore.get('access_token')?.value;
 
-  const res = await fetch(`http://localhost:8080/products/${id}`, {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/products/${id}`, {
     headers: {
       ...(token ? { "Cookie": `access_token=${token}` } : {})
     },
@@ -81,17 +81,16 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
             <span className="text-xs uppercase tracking-widest text-primary font-semibold">{product.category}</span>
           </div>
           <h1 className="text-3xl font-bold mb-4">{product.name}</h1>
-          
+
           <div className="flex items-center gap-2 mb-6">
             <div className="flex">
               {[...Array(5)].map((_, i) => (
-                <Star 
-                  key={i} 
-                  className={`w-5 h-5 ${
-                    i < Math.floor(product.averageRating || 0) 
-                      ? "fill-orange-400 text-orange-400" 
+                <Star
+                  key={i}
+                  className={`w-5 h-5 ${i < Math.floor(product.averageRating || 0)
+                      ? "fill-orange-400 text-orange-400"
                       : "fill-muted text-muted"
-                  }`} 
+                    }`}
                 />
               ))}
             </div>
@@ -115,10 +114,10 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
 
           <div className="mt-auto pt-4 border-t border-border/50">
             <form action={addToCart.bind(null, Number(product.id), 1)}>
-              <Button 
+              <Button
                 type="submit"
-                size="lg" 
-                className="w-full sm:w-auto px-8" 
+                size="lg"
+                className="w-full sm:w-auto px-8"
                 disabled={product.stock <= 0}
               >
                 <ShoppingCart className="w-5 h-5 mr-2" />
@@ -139,19 +138,18 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
                 <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
                     <span className="font-semibold text-sm">
-                      {review.user?.firstName 
-                        ? `${review.user.firstName} ${review.user.lastName || ''}`.trim() 
+                      {review.user?.email
+                        ? `${review.user.email}`.trim()
                         : "Anonymous"}
                     </span>
                     <span className="text-xs text-muted-foreground">• {new Date(review.createdAt).toLocaleDateString()}</span>
                   </div>
                   <div className="flex">
                     {[...Array(5)].map((_, i) => (
-                      <Star 
-                        key={i} 
-                        className={`w-3.5 h-3.5 ${
-                          i < review.rating ? "fill-orange-400 text-orange-400" : "fill-muted text-muted"
-                        }`} 
+                      <Star
+                        key={i}
+                        className={`w-3.5 h-3.5 ${i < review.rating ? "fill-orange-400 text-orange-400" : "fill-muted text-muted"
+                          }`}
                       />
                     ))}
                   </div>

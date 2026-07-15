@@ -1,6 +1,6 @@
 import React from "react";
 import { Topbar } from "@/components/layout/topbar";
-import { Activity, CreditCard, DollarSign, Users } from "lucide-react";
+import { SidebarNav } from "@/components/layout/sidebar-nav";
 import Link from "next/link";
 import { cookies } from "next/headers";
 
@@ -15,7 +15,7 @@ export default async function DashboardLayout({
   let cartCount = 0;
   try {
     if (token) {
-      const res = await fetch(`http://localhost:8080/cart`, {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/cart`, {
         headers: {
           ...(token ? { "Cookie": `access_token=${token}` } : {})
         },
@@ -74,24 +74,7 @@ export default async function DashboardLayout({
             Vought India
           </span>
         </div>
-        <nav className="flex flex-col gap-2 p-4 text-sm font-medium">
-          <Link href="/dashboard" className="flex items-center gap-3 rounded-lg hover:bg-zinc-800/80 bg-zinc-800/40 px-3 py-2 text-zinc-50 transition-all">
-            <Activity className="h-5 w-5 text-zinc-50" />
-            Overview
-          </Link>
-          <Link href="#" className="flex items-center gap-3 rounded-lg px-3 py-2 text-zinc-400 transition-all hover:text-zinc-50 hover:bg-zinc-800/50">
-            <Users className="h-5 w-5" />
-            Customers
-          </Link>
-          <Link href="/dashboard/products" className="flex items-center gap-3 rounded-lg px-3 py-2 text-zinc-400 transition-all hover:text-zinc-50 hover:bg-zinc-800/50">
-            <DollarSign className="h-5 w-5" />
-            Products
-          </Link>
-          <Link href="#" className="flex items-center gap-3 rounded-lg px-3 py-2 text-zinc-400 transition-all hover:text-zinc-50 hover:bg-zinc-800/50">
-            <CreditCard className="h-5 w-5" />
-            Settings
-          </Link>
-        </nav>
+        <SidebarNav />
       </aside>
 
       {/* Main Content Area */}

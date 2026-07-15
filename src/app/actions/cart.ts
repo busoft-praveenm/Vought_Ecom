@@ -3,7 +3,7 @@
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 
-const API_BASE_URL = 'http://localhost:8080';
+const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_BASE_URL;
 
 async function fetchWithAuth(url: string, options: RequestInit = {}) {
   const cookieStore = await cookies();

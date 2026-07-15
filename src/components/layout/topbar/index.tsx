@@ -21,7 +21,7 @@ export const Topbar = ({ cartCount = 0 }: { cartCount?: number }) => {
 
   const handleLogout = async () => {
     try {
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_BASE_URL || 'http://localhost:8080';
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_BASE_URL;
       await fetch(`${backendUrl}/auth/logout`, {
         method: "POST",
         // credentials: "omit" or "include", depending on your CORS setup.
@@ -50,7 +50,7 @@ export const Topbar = ({ cartCount = 0 }: { cartCount?: number }) => {
           <Button variant="ghost" size="icon" className="relative rounded-full text-zinc-400 hover:text-zinc-50 hover:bg-zinc-800/50">
             <ShoppingCart className="h-5 w-5" />
             {cartCount > 0 && (
-              <span className="absolute top-0 right-0 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground">
+              <span className="absolute -top-1.5 -right-1.5 flex h-[22px] min-w-[22px] px-1 items-center justify-center rounded-full bg-[#FF9933] text-[12px] font-black text-black shadow-md border border-[#FF9933]">
                 {cartCount}
               </span>
             )}

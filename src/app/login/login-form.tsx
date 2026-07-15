@@ -30,7 +30,7 @@ export function LoginForm() {
       const idToken = await userCredential.user.getIdToken();
 
       // 3. Send the token to the backend to set the session cookie
-      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_BASE_URL || 'http://localhost:8080';
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_BASE_URL;
       const res = await fetch(`${backendUrl}/auth/login`, {
         method: "POST",
         headers: {

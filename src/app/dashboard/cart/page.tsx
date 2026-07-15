@@ -28,7 +28,7 @@ export default async function CartPage() {
   const cookieStore = await cookies();
   const token = cookieStore.get('access_token')?.value;
 
-  const res = await fetch(`http://localhost:8080/cart`, {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/cart`, {
     headers: {
       ...(token ? { "Cookie": `access_token=${token}` } : {})
     },
@@ -101,7 +101,7 @@ export default async function CartPage() {
                   </Link>
                   <span className="font-bold whitespace-nowrap">
                     {item.product.currency === 'INR' ? '₹' : '$'}
-                    {(Number(item.product.price) * item.quantity).toFixed(2)}
+                    {Number(item.product.price).toFixed(2)}
                   </span>
                 </div>
                 
@@ -155,13 +155,13 @@ export default async function CartPage() {
             </div>
             <div className="flex justify-between text-muted-foreground">
               <span>Tax (Estimated)</span>
-              <span>{currencySymbol}{(subtotal * 0.08).toFixed(2)}</span>
+              <span>{currencySymbol}0.00</span>
             </div>
           </div>
           
           <div className="flex justify-between font-bold text-lg mb-8 pt-4 border-t border-border/50">
             <span>Total</span>
-            <span className="text-primary">{currencySymbol}{(subtotal + (subtotal * 0.08)).toFixed(2)}</span>
+            <span className="text-primary">{currencySymbol}{subtotal.toFixed(2)}</span>
           </div>
           
           <Button size="lg" className="w-full">
