@@ -1,5 +1,6 @@
 import React, { Suspense } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { cookies } from "next/headers";
 import {
   Pagination,
@@ -102,71 +103,71 @@ export default async function ProductsPage({
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
           {products.map((product) => (
-            <Card key={product.id} className="group overflow-hidden flex flex-col hover:shadow-lg transition-all border-border/50 bg-card hover:border-primary/50 cursor-pointer">
-              <div className="relative w-full aspect-square bg-muted/30 overflow-hidden p-4 flex items-center justify-center">
-                {product.imageUrl ? (
-                  <img 
-                    src={product.imageUrl} 
-                    alt={product.name}
-                    className="w-full h-full object-cover rounded-md group-hover:scale-105 transition-transform duration-300 shadow-sm"
-                  />
-                ) : (
-                  <div className="w-full h-full bg-secondary/50 rounded-md flex items-center justify-center text-muted-foreground group-hover:scale-105 transition-transform duration-300">
-                    <span className="text-xs uppercase tracking-widest">{product.category}</span>
-                  </div>
-                )}
-                
-                {product.status !== 'Active' && (
-                  <span className={`absolute top-2 right-2 z-10 px-2 py-1 text-[10px] font-bold uppercase rounded-sm ${
-                    product.status === 'Out of Stock' ? 'bg-destructive text-destructive-foreground' : 'bg-yellow-500 text-white'
-                  }`}>
-                    {product.status}
-                  </span>
-                )}
-              </div>
-              
-              <CardContent className="p-4 flex-1 flex flex-col">
-                <h3 className="font-medium text-sm line-clamp-2 min-h-[40px] group-hover:text-primary transition-colors">
-                  {product.name}
-                </h3>
-                
-                <div className="flex items-center gap-1 mt-2">
-                  <div className="flex">
-                    {[...Array(5)].map((_, i) => (
-                      <Star 
-                        key={i} 
-                        className={`w-3.5 h-3.5 ${
-                          i < Math.floor(product.averageRating || 0) 
-                            ? "fill-orange-400 text-orange-400" 
-                            : "fill-muted text-muted"
-                        }`} 
-                      />
-                    ))}
-                  </div>
-                  <span className="text-xs text-muted-foreground ml-1">
-                    ({product.averageRating ? Number(product.averageRating).toFixed(1) : "0.0"})
-                  </span>
-                </div>
-                
-                <div className="mt-auto pt-3 flex items-end justify-between">
-                  <div className="flex flex-col">
-                    <span className="text-xl font-bold">
-                      {product.currency === 'INR' ? '₹' : '$'}{Number(product.price).toFixed(2)}
+            <Link key={product.id} href={`/dashboard/products/${product.id}`} className="block h-full">
+              <Card className="group overflow-hidden flex flex-col hover:shadow-lg transition-all border-border/50 bg-card hover:border-primary/50 cursor-pointer h-full">
+                <div className="relative w-full aspect-square bg-muted/30 overflow-hidden p-4 flex items-center justify-center">
+                  {product.imageUrl ? (
+                    <img 
+                      src={product.imageUrl} 
+                      alt={product.name}
+                      className="w-full h-full object-cover rounded-md group-hover:scale-105 transition-transform duration-300 shadow-sm"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-secondary/50 rounded-md flex items-center justify-center text-muted-foreground group-hover:scale-105 transition-transform duration-300">
+                      <span className="text-xs uppercase tracking-widest">{product.category}</span>
+                    </div>
+                  )}
+                  
+                  {product.status !== 'Active' && (
+                    <span className={`absolute top-2 right-2 z-10 px-2 py-1 text-[10px] font-bold uppercase rounded-sm ${
+                      product.status === 'Out of Stock' ? 'bg-destructive text-destructive-foreground' : 'bg-yellow-500 text-white'
+                    }`}>
+                      {product.status}
                     </span>
-                    <span className="text-[10px] text-muted-foreground mt-0.5">In stock: {product.stock}</span>
-                  </div>
+                  )}
                 </div>
-              </CardContent>
-              <CardFooter className="p-4 pt-0">
-                <Button 
-                  className="w-full h-9 text-xs font-semibold" 
-                  disabled={product.status === 'Out of Stock'}
-                >
-                  <ShoppingCart className="w-3.5 h-3.5 mr-2" />
-                  {product.status === 'Out of Stock' ? 'Out of Stock' : 'Add to Cart'}
-                </Button>
-              </CardFooter>
-            </Card>
+                
+                <CardContent className="p-4 flex-1 flex flex-col">
+                  <h3 className="font-medium text-sm line-clamp-2 min-h-[40px] group-hover:text-primary transition-colors">
+                    {product.name}
+                  </h3>
+                  
+                  <div className="flex items-center gap-1 mt-2">
+                    <div className="flex">
+                      {[...Array(5)].map((_, i) => (
+                        <Star 
+                          key={i} 
+                          className={`w-3.5 h-3.5 ${
+                            i < Math.floor(product.averageRating || 0) 
+                              ? "fill-orange-400 text-orange-400" 
+                              : "fill-muted text-muted"
+                          }`} 
+                        />
+                      ))}
+                    </div>
+                    <span className="text-xs text-muted-foreground ml-1">
+                      ({product.averageRating ? Number(product.averageRating).toFixed(1) : "0.0"})
+                    </span>
+                  </div>
+                  
+                  <div className="mt-auto pt-3 flex items-end justify-between">
+                    <div className="flex flex-col">
+                      <span className="text-xl font-bold">
+                        {product.currency === 'INR' ? '₹' : '$'}{Number(product.price).toFixed(2)}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground mt-0.5">In stock: {product.stock}</span>
+                    </div>
+                  </div>
+                </CardContent>
+                <CardFooter className="p-4 pt-0">
+                  {/* We omit the Add to cart button here or make it a div to avoid nested links */}
+                  <div className="w-full flex items-center justify-center h-9 text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90 rounded-md">
+                    <ShoppingCart className="w-3.5 h-3.5 mr-2" />
+                    {product.status === 'Out of Stock' ? 'Out of Stock' : 'View Details'}
+                  </div>
+                </CardFooter>
+              </Card>
+            </Link>
           ))}
         </div>
       )}

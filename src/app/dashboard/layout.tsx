@@ -2,12 +2,35 @@ import React from "react";
 import { Topbar } from "@/components/layout/topbar";
 import { Activity, CreditCard, DollarSign, Users } from "lucide-react";
 import Link from "next/link";
+import { cookies } from "next/headers";
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const cookieStore = await cookies();
+  const token = cookieStore.get('access_token')?.value;
+
+  let cartCount = 0;
+  try {
+    if (token) {
+      const res = await fetch(`http://localhost:8080/cart`, {
+        headers: {
+          ...(token ? { "Cookie": `access_token=${token}` } : {})
+        },
+        cache: 'no-store' // Keep it fresh
+      });
+      if (res.ok) {
+        const data = await res.json();
+        // Count number of distinct products, or you can sum quantity
+        cartCount = data?.items?.length || 0; 
+      }
+    }
+  } catch (err) {
+    console.error("Failed to fetch cart in layout", err);
+  }
+
   return (
     <div className="flex min-h-screen w-full bg-muted/40">
       {/* Sidebar Navigation */}
@@ -74,7 +97,7 @@ export default function DashboardLayout({
       {/* Main Content Area */}
       <div className="flex flex-col sm:gap-4 sm:pl-64 w-full">
         {/* We use the custom Topbar component */}
-        <Topbar />
+        <Topbar cartCount={cartCount} />
 
         <main className="flex-1 items-start gap-4 p-4 sm:px-6 md:gap-8">
           {children}

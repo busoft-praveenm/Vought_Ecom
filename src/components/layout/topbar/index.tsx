@@ -2,9 +2,10 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import { Search, Bell, Settings, User, LogOut } from "lucide-react";
+import { Search, Bell, Settings, User, LogOut, ShoppingCart } from "lucide-react";
 import { Input } from "@/components/input";
 import { Button } from "@/components/button";
+import Link from "next/link";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,7 +16,7 @@ import {
   DropdownMenuGroup,
 } from "@/components/dropdown-menu";
 
-export const Topbar = () => {
+export const Topbar = ({ cartCount = 0 }: { cartCount?: number }) => {
   const router = useRouter();
 
   const handleLogout = async () => {
@@ -45,6 +46,17 @@ export const Topbar = () => {
         </form>
       </div>
       <div className="flex items-center gap-2">
+        <Link href="/dashboard/cart">
+          <Button variant="ghost" size="icon" className="relative rounded-full text-zinc-400 hover:text-zinc-50 hover:bg-zinc-800/50">
+            <ShoppingCart className="h-5 w-5" />
+            {cartCount > 0 && (
+              <span className="absolute top-0 right-0 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground">
+                {cartCount}
+              </span>
+            )}
+            <span className="sr-only">Cart</span>
+          </Button>
+        </Link>
         <Button variant="ghost" size="icon" className="rounded-full text-zinc-400 hover:text-zinc-50 hover:bg-zinc-800/50">
           <Bell className="h-5 w-5" />
           <span className="sr-only">Notifications</span>
