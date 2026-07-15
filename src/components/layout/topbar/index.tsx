@@ -24,12 +24,13 @@ export const Topbar = ({ cartCount = 0 }: { cartCount?: number }) => {
       const backendUrl = process.env.NEXT_PUBLIC_BACKEND_BASE_URL;
       await fetch(`${backendUrl}/auth/logout`, {
         method: "POST",
-        // credentials: "omit" or "include", depending on your CORS setup.
+        credentials: "include",
       });
-      // Redirect to login page after logout
-      router.push("/login");
     } catch (error) {
       console.error("Logout failed", error);
+    } finally {
+      // Always redirect to login page after logout attempt
+      router.push("/login");
     }
   };
 
@@ -69,8 +70,8 @@ export const Topbar = ({ cartCount = 0 }: { cartCount?: number }) => {
         <div className="ml-2 flex items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger render={
-              <Button variant="secondary" size="icon" className="rounded-full overflow-hidden bg-primary/10 hover:bg-primary/20 border border-primary/20 cursor-pointer">
-                <User className="h-5 w-5 text-zinc-50" />
+              <Button variant="secondary" size="icon" className="group rounded-full overflow-hidden bg-primary/10 hover:bg-primary/20 border border-primary/20 cursor-pointer">
+                <User className="h-5 w-5 text-zinc-50 group-data-[state=open]:text-black" />
                 <span className="sr-only">User Profile</span>
               </Button>
             } />

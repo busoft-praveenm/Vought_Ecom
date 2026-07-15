@@ -1,6 +1,6 @@
-import React from "react";
 import { Topbar } from "@/components/layout/topbar";
 import { SidebarNav } from "@/components/layout/sidebar-nav";
+import { AutoLogout } from "@/components/auth/auto-logout";
 import Link from "next/link";
 import { cookies } from "next/headers";
 
@@ -11,6 +11,26 @@ export default async function DashboardLayout({
 }) {
   const cookieStore = await cookies();
   const token = cookieStore.get('access_token')?.value;
+
+  let exp: number | undefined;
+  if (token) {
+    try {
+      const payloadPart = token.split('.')[1];
+      if (payloadPart) {
+        const base64 = payloadPart.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(
+          atob(base64)
+            .split('')
+            .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+            .join('')
+        );
+        const payload = JSON.parse(jsonPayload);
+        exp = payload.exp;
+      }
+    } catch (e) {
+      console.error("Failed to parse token for AutoLogout", e);
+    }
+  }
 
   let cartCount = 0;
   try {
@@ -33,6 +53,7 @@ export default async function DashboardLayout({
 
   return (
     <div className="flex min-h-screen w-full bg-muted/40">
+      <AutoLogout exp={exp} />
       {/* Sidebar Navigation */}
       <aside className="fixed inset-y-0 left-0 z-10 hidden w-64 flex-col border-r border-zinc-800 bg-[#494F55] sm:flex">
         <div className="flex h-16 items-center border-b border-zinc-800 px-6 relative">

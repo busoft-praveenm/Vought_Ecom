@@ -26,9 +26,12 @@ type ProductDetails = {
     user: {
       id: number;
       name: string;
+      email?: string;
     }
   }>;
 };
+
+import { ReviewForm } from "@/components/review-form";
 
 export default async function ProductDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -57,6 +60,20 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
   const { product, reviews } = data;
 
   const currencySymbol = product.currency === 'INR' ? '₹' : '$';
+
+  let hasReviewed = false;
+  if (token) {
+    try {
+      const payloadBase64 = token.split('.')[1];
+      const decodedJson = Buffer.from(payloadBase64, 'base64').toString('utf-8');
+      const payload = JSON.parse(decodedJson);
+      if (payload.email) {
+        hasReviewed = reviews.some(r => r.user?.email === payload.email);
+      }
+    } catch (e) {
+      console.error("Failed to decode token", e);
+    }
+  }
 
   return (
     <div className="flex-1 p-6 md:p-8 overflow-y-auto w-full">
@@ -128,11 +145,11 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
         </div>
       </div>
 
-      {/* Reviews Section */}
+    {/* Reviews Section */}
       <div>
         <h2 className="text-2xl font-bold mb-6">Customer Reviews</h2>
         {reviews && reviews.length > 0 ? (
-          <div className="space-y-4">
+          <div className="space-y-4 mb-8">
             {reviews.map((review) => (
               <div key={review.id} className="p-4 bg-card border border-border/50 rounded-lg">
                 <div className="flex items-center justify-between mb-2">
@@ -159,7 +176,19 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
             ))}
           </div>
         ) : (
-          <p className="text-muted-foreground">No reviews yet. Be the first to review this product!</p>
+          <p className="text-muted-foreground mb-8">No reviews yet. Be the first to review this product!</p>
+        )}
+
+        {token && !hasReviewed ? (
+          <ReviewForm productId={Number(product.id)} />
+        ) : token && hasReviewed ? (
+          <div className="mt-8 p-4 bg-muted/30 border border-border/50 rounded-lg text-center">
+            <p className="text-muted-foreground">You have already reviewed this product. Thank you for your feedback!</p>
+          </div>
+        ) : (
+          <div className="mt-8 p-4 bg-muted/30 border border-border/50 rounded-lg text-center">
+            <p className="text-muted-foreground">Please log in to leave a review.</p>
+          </div>
         )}
       </div>
     </div>
