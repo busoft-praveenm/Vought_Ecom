@@ -7,6 +7,7 @@ import { Input } from "@/components/input";
 import { Label } from "@/components/label";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/card";
+import { saveProductAction } from "./actions";
 
 type ProductData = {
   name: string;
@@ -49,33 +50,19 @@ export function ProductForm({
     setIsLoading(true);
 
     try {
-      const isEdit = !!productId;
-      const url = isEdit 
-        ? `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/products/${productId}`
-        : `${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/products`;
-        
-      const method = isEdit ? "PATCH" : "POST";
-      
       const payload = {
         ...formData,
         price: parseFloat(formData.price),
         stock: parseInt(formData.stock, 10),
       };
 
-      const res = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) {
-        throw new Error("Failed to save product");
+      const result = await saveProductAction(payload, productId);
+      
+      if (!result.success) {
+        throw new Error(result.error || "Failed to save product");
       }
 
-      toast.success(isEdit ? "Product updated successfully" : "Product created successfully");
+      toast.success(productId ? "Product updated successfully" : "Product created successfully");
       router.push("/dashboard/admin/products");
       router.refresh();
     } catch (err: any) {

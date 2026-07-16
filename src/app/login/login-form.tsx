@@ -26,7 +26,7 @@ export function LoginForm() {
     try {
       // 1. Sign in with Firebase to get the user
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
-      
+
       // 2. Get the Firebase ID token
       const idToken = await userCredential.user.getIdToken();
 
@@ -44,7 +44,7 @@ export function LoginForm() {
       if (!res.ok) {
         throw new Error("Backend authentication failed");
       }
-      
+
       // Redirect to dashboard
       router.push("/dashboard");
     } catch (err: any) {
@@ -64,7 +64,7 @@ export function LoginForm() {
     try {
       const provider = new GoogleAuthProvider();
       const userCredential = await signInWithPopup(auth, provider);
-      
+
       const idToken = await userCredential.user.getIdToken();
 
       const backendUrl = process.env.NEXT_PUBLIC_BACKEND_BASE_URL;
@@ -80,7 +80,7 @@ export function LoginForm() {
       if (!res.ok) {
         throw new Error("Backend authentication failed");
       }
-      
+
       router.push("/dashboard");
     } catch (err: any) {
       if (err?.code !== 'auth/popup-closed-by-user') {
@@ -155,8 +155,8 @@ export function LoginForm() {
         </div>
 
         <div className="grid grid-cols-1 gap-4">
-          <Button 
-            variant="outline" 
+          <Button
+            variant="outline"
             type="button"
             onClick={handleGoogleLogin}
             disabled={isLoading || isGoogleLoading}
