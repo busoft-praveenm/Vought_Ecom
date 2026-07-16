@@ -1,6 +1,8 @@
-import { Controller, Get, Injectable, Param, Query, UseGuards, UseInterceptors } from "@nestjs/common";
+import { Controller, Get, Post, Patch, Delete, Body, Injectable, Param, Query, UseGuards, UseInterceptors } from "@nestjs/common";
 import { ProductsService } from "./products.service";
 import { FirebaseAuthGuard } from "@/guards/firebase.auth.guard";
+import { RolesGuard } from "@/guards/roles.guard";
+import { Roles } from "@/decorators/roles.decorator";
 import { CacheInterceptor, CacheKey, CacheTTL } from "@nestjs/cache-manager";
 
 
@@ -27,5 +29,26 @@ export class ProductsController {
   @Get(':id')
   async getProduct(@Param('id') id: string) {
     return this.productsService.getProduct(Number(id));
+  }
+
+  @UseGuards(FirebaseAuthGuard, RolesGuard)
+  @Roles('admin')
+  @Post()
+  async createProduct(@Body() createProductDto: any) {
+    return this.productsService.createProduct(createProductDto);
+  }
+
+  @UseGuards(FirebaseAuthGuard, RolesGuard)
+  @Roles('admin')
+  @Patch(':id')
+  async updateProduct(@Param('id') id: string, @Body() updateProductDto: any) {
+    return this.productsService.updateProduct(Number(id), updateProductDto);
+  }
+
+  @UseGuards(FirebaseAuthGuard, RolesGuard)
+  @Roles('admin')
+  @Delete(':id')
+  async deleteProduct(@Param('id') id: string) {
+    return this.productsService.deleteProduct(Number(id));
   }
 }

@@ -15,6 +15,7 @@ export class UserDbService {
   async findById(id: number):Promise<UserDb>{
     const user = await this.userRepo
       .createQueryBuilder('user')
+      .leftJoinAndSelect('user.role', 'role')
       .where('user.id = :id', { id })
       .getOne()
 
@@ -37,6 +38,7 @@ export class UserDbService {
   async findByFirebaseUid(firebaseUid: string):Promise<UserDb | null>{
     return this.userRepo
       .createQueryBuilder('user')
+      .leftJoinAndSelect('user.role', 'role')
       .where('user.firebaseUid = :firebaseUid', {firebaseUid})
       .getOne();
   }
@@ -44,6 +46,7 @@ export class UserDbService {
   async findByEmail(email: string): Promise<UserDb | null>{
     return this.userRepo
       .createQueryBuilder('user')
+      .leftJoinAndSelect('user.role', 'role')
       .where('user.email = :email', {email})
       .getOne();
   }

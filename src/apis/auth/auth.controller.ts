@@ -1,7 +1,7 @@
-import { Controller, Headers, Post, Req, Res } from "@nestjs/common";
+import { Controller, Get, Headers, Post, Req, Res, UseGuards } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import type { Request, Response } from "express";
-
+import { FirebaseAuthGuard } from "@/guards/firebase.auth.guard";
 
 @Controller('auth')
 export class AuthController {
@@ -66,6 +66,15 @@ export class AuthController {
     );
     
     return { message: 'Logout Success' };
+  }
+
+  @UseGuards(FirebaseAuthGuard)
+  @Get('me')
+  async getMe(@Req() request: Request) {
+    return {
+      message: 'Success',
+      user: request['dbUser']
+    };
   }
 
 }
