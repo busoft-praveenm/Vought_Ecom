@@ -1,7 +1,10 @@
 import { UserDbService } from "@/common/db-services/user-db.service";
 import { UserDb } from "@/common/entities/tbl_user.entity";
 import { FirebaseAuthGuard } from "@/guards/firebase.auth.guard";
-import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { Inject, Injectable, UnauthorizedException } from "@nestjs/common";
+import { ConfigService } from "@nestjs/config";
+import { CACHE_MANAGER } from "@nestjs/cache-manager";
+import type { Cache } from "cache-manager";
 import {v4 as uuidv4} from "uuid";
 
 @Injectable()
@@ -9,11 +12,14 @@ export class AuthService {
 
   constructor(
     private readonly userDbService: UserDbService,
-    private readonly fireBaseAuthGuard: FirebaseAuthGuard
+    private readonly fireBaseAuthGuard: FirebaseAuthGuard,
+    private readonly configService: ConfigService,
+    @Inject(CACHE_MANAGER) private readonly cacheManager: Cache
   ){}
 
   async fireBaseLogin(
-    token: string
+    token: string,
+    body?: any
   ):Promise<any>{
 
     try{
@@ -31,17 +37,40 @@ export class AuthService {
         const [firstName, ...rest] = fullName.split(' ');
         const lastName = rest.join(' ');
 
+        const adminEmail = this.configService.get<string>('ADMIN_EMAIL');
+        const roleName = decoded.email === adminEmail ? 'admin' : 'user';
+
         user = 
         await this.userDbService.createUser({
           userUid: uuidv4(),
           firebaseUid: decoded.uid,
           email: decoded.email,
-          firstName,
-          lastName,
           provider: decoded.firebase?.sign_in_provider,
           photoUrl: decoded.picture,
-          role: { id: 2 } as any
-        });
+          profileData: {
+            firstName: body?.firstName || firstName || null,
+            lastName: body?.lastName || lastName || null,
+            mobileNumber: body?.mobileNumber || null
+          }
+        }, roleName);
+
+        try {
+          const cacheManagerAny = this.cacheManager as any;
+          const store = cacheManagerAny.store || (cacheManagerAny.stores && cacheManagerAny.stores[0]);
+          
+          let keys: string[] = [];
+          if (store && typeof store.keys === 'function') {
+            keys = await store.keys('*/users/customers*');
+          } else if (store && store.client && typeof store.client.keys === 'function') {
+            keys = await store.client.keys('*/users/customers*');
+          }
+
+          for (const key of keys) {
+            await this.cacheManager.del(key);
+          }
+        } catch (error) {
+          console.error('Failed to invalidate cache:', error);
+        }
       }
 
        if (
@@ -62,6 +91,23 @@ export class AuthService {
       throw error;
     }
 
+  }
+
+  async updateProfile(userId: number, data: any): Promise<any> {
+    try {
+      const user = await this.userDbService.updateUserProfile(userId, {
+        firstName: data.firstName,
+        lastName: data.lastName,
+        mobileNumber: data.mobileNumber
+      });
+      return {
+        success: true,
+        message: 'Profile updated successfully',
+        user
+      };
+    } catch (error) {
+      throw error;
+    }
   }
 
 }

@@ -1,4 +1,4 @@
-import { Controller, Get, Headers, Post, Req, Res, UseGuards } from "@nestjs/common";
+import { Controller, Get, Headers, Post, Put, Req, Res, UseGuards, Body } from "@nestjs/common";
 import { AuthService } from "./auth.service";
 import type { Request, Response } from "express";
 import { FirebaseAuthGuard } from "@/guards/firebase.auth.guard";
@@ -13,12 +13,13 @@ export class AuthController {
   @Post('login')
   async firebaseLogin(
     @Headers('authorization') authHeader: string,
-    @Res({ passthrough: true }) response: Response
+    @Res({ passthrough: true }) response: Response,
+    @Body() body?: any
   ){
     
     const token = authHeader?.replace('Bearer ', '');
     // console.log('login firebase entered: ', token);
-    const result = await this.authService.fireBaseLogin(token);
+    const result = await this.authService.fireBaseLogin(token, body);
     // console.log('result firebaselogin: ', result);
     response.cookie(
       'access_token',
@@ -75,6 +76,13 @@ export class AuthController {
       message: 'Success',
       user: request['dbUser']
     };
+  }
+
+  @UseGuards(FirebaseAuthGuard)
+  @Put('profile')
+  async updateProfile(@Req() request: Request, @Body() body: any) {
+    const userId = request['dbUser'].id;
+    return this.authService.updateProfile(userId, body);
   }
 
 }

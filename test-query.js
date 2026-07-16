@@ -4,8 +4,8 @@ const config = require('./src/config/typeorm-cli.config.ts').default;
 async function run() {
   await config.initialize();
   try {
-    const user = await config.getRepository('tbl_user').findOne({ where: { email: 'praveen_m@yopmail.com' } });
-    console.log("Success:", user);
+    const roles = await config.getRepository('tbl_role').find();
+    console.log("Roles:", roles);
   } catch (e) {
     console.error("Error:", e);
   }

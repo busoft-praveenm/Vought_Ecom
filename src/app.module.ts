@@ -11,6 +11,7 @@ import { ReviewsModule } from './apis/reviews/reviews.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import { redisStore } from 'cache-manager-redis-yet';
 import { CartModule } from './apis/cart/cart.module';
+import { UsersModule } from './apis/users/users.module';
 
 @Module({
   imports: [
@@ -42,7 +43,8 @@ import { CartModule } from './apis/cart/cart.module';
     AuthModule,
     ProductsModule,
     ReviewsModule,
-    CartModule
+    CartModule,
+    UsersModule
   ],
   controllers: [AppController],
   providers: [AppService],
