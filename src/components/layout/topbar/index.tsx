@@ -70,8 +70,8 @@ export const Topbar = ({ cartCount = 0 }: { cartCount?: number }) => {
         <div className="ml-2 flex items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger render={
-              <Button variant="secondary" size="icon" className="group rounded-full overflow-hidden bg-primary/10 hover:bg-primary/20 border border-primary/20 cursor-pointer">
-                <User className="h-5 w-5 text-zinc-50 group-data-[state=open]:text-black" />
+              <Button variant="ghost" size="icon" className="rounded-full text-zinc-400 hover:text-zinc-50 hover:bg-zinc-800/50 data-[state=open]:bg-zinc-800/50 data-[state=open]:text-zinc-50 cursor-pointer">
+                <User className="h-5 w-5" />
                 <span className="sr-only">User Profile</span>
               </Button>
             } />
@@ -80,7 +80,7 @@ export const Topbar = ({ cartCount = 0 }: { cartCount?: number }) => {
                 <DropdownMenuLabel>My Account</DropdownMenuLabel>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>Profile</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => router.push('/dashboard/profile')} className="cursor-pointer">Profile</DropdownMenuItem>
               <DropdownMenuItem>Settings</DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:bg-destructive/10 cursor-pointer">

@@ -6,31 +6,39 @@ import Link from "next/link";
 import { Button } from "@/components/button";
 import { Input } from "@/components/input";
 import { Label } from "@/components/label";
-import { Checkbox } from "@/components/checkbox";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/card";
 import { auth } from "@/firebase/auth";
-import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, updateProfile } from "firebase/auth";
 import { toast } from "sonner";
 
-export function LoginForm() {
+export function SignupForm() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [mobileNumber, setMobileNumber] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      // 1. Sign in with Firebase to get the user
-      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      // 1. Create user in Firebase
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       
-      // 2. Get the Firebase ID token
+      // 2. Update Firebase profile with name
+      await updateProfile(userCredential.user, {
+        displayName: `${firstName} ${lastName}`.trim()
+      });
+      
+      // 3. Get the Firebase ID token
       const idToken = await userCredential.user.getIdToken();
 
-      // 3. Send the token to the backend to set the session cookie
+      // 4. Send the token and extra profile details to the backend to create tbl_user and tbl_user_profile
       const backendUrl = process.env.NEXT_PUBLIC_BACKEND_BASE_URL;
       const res = await fetch(`${backendUrl}/auth/login`, {
         method: "POST",
@@ -38,20 +46,28 @@ export function LoginForm() {
           "Authorization": `Bearer ${idToken}`,
           "Content-Type": "application/json",
         },
-        credentials: "include" // Important to ensure the backend can set the cookie on the browser
+        body: JSON.stringify({
+          firstName,
+          lastName,
+          mobileNumber
+        }),
+        credentials: "include"
       });
 
       if (!res.ok) {
         throw new Error("Backend authentication failed");
       }
       
-      // Redirect to dashboard
+      toast.success("Account created successfully!");
       router.push("/dashboard");
     } catch (err: any) {
-      // Format common firebase errors or show a generic message
-      let errorMessage = "Failed to sign in. Please check your credentials.";
-      if (err?.code === 'auth/invalid-credential' || err?.code === 'auth/wrong-password' || err?.code === 'auth/user-not-found') {
-        errorMessage = "Invalid email or password.";
+      let errorMessage = "Failed to create account.";
+      if (err?.code === 'auth/email-already-in-use') {
+        errorMessage = "An account with this email already exists.";
+      } else if (err?.code === 'auth/weak-password') {
+        errorMessage = "Password is too weak. Please use a stronger password.";
+      } else if (err?.code === 'auth/invalid-email') {
+        errorMessage = "Invalid email format.";
       }
       toast.error(errorMessage);
     } finally {
@@ -59,7 +75,7 @@ export function LoginForm() {
     }
   };
 
-  const handleGoogleLogin = async () => {
+  const handleGoogleSignup = async () => {
     setIsGoogleLoading(true);
     try {
       const provider = new GoogleAuthProvider();
@@ -81,6 +97,7 @@ export function LoginForm() {
         throw new Error("Backend authentication failed");
       }
       
+      toast.success("Signed in with Google successfully!");
       router.push("/dashboard");
     } catch (err: any) {
       if (err?.code !== 'auth/popup-closed-by-user') {
@@ -92,56 +109,81 @@ export function LoginForm() {
   };
 
   return (
-    <Card className="w-full max-w-md bg-card/60 backdrop-blur-xl border-border shadow-2xl z-10 animate-in fade-in zoom-in-95 duration-500">
+    <Card className="w-full max-w-md bg-card/60 backdrop-blur-xl border-border shadow-2xl z-10 animate-in fade-in zoom-in-95 duration-500 my-8">
       <CardHeader className="space-y-2">
-        <CardTitle className="text-3xl font-bold tracking-tight">Welcome back</CardTitle>
+        <CardTitle className="text-3xl font-bold tracking-tight">Create an account</CardTitle>
         <CardDescription className="text-muted-foreground text-base">
-          Enter your credentials to access your account
+          Enter your details below to create your account
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSignup} className="space-y-4">
+          
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="firstName">First Name</Label>
+              <Input
+                id="firstName"
+                placeholder="John"
+                className="bg-background/50 h-11"
+                required
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="lastName">Last Name</Label>
+              <Input
+                id="lastName"
+                placeholder="Doe"
+                className="bg-background/50 h-11"
+                required
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="mobileNumber">Mobile Number (Optional)</Label>
+            <Input
+              id="mobileNumber"
+              type="tel"
+              placeholder="+1 (555) 000-0000"
+              className="bg-background/50 h-11"
+              value={mobileNumber}
+              onChange={(e) => setMobileNumber(e.target.value)}
+            />
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
               id="email"
               type="email"
               placeholder="name@example.com"
-              className="bg-background/50 h-11 transition-all hover:bg-background focus:bg-background"
+              className="bg-background/50 h-11"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
             />
           </div>
+          
           <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="password">Password</Label>
-              <Link href="#" className="text-sm font-medium text-primary hover:underline underline-offset-4">
-                Forgot password?
-              </Link>
-            </div>
+            <Label htmlFor="password">Password</Label>
             <Input
               id="password"
               type="password"
               placeholder="••••••••"
-              className="bg-background/50 h-11 transition-all hover:bg-background focus:bg-background"
+              className="bg-background/50 h-11"
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
           </div>
-          <div className="flex items-center space-x-2 pt-2">
-            <Checkbox id="remember" />
-            <Label
-              htmlFor="remember"
-              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
-            >
-              Remember me for 30 days
-            </Label>
-          </div>
 
           <Button type="submit" disabled={isLoading || isGoogleLoading} className="w-full h-11 text-base font-semibold shadow-lg hover:shadow-primary/25 transition-all mt-4">
-            {isLoading ? "Signing in..." : "Sign in"}
+            {isLoading ? "Creating account..." : "Sign up"}
           </Button>
         </form>
 
@@ -158,7 +200,7 @@ export function LoginForm() {
           <Button 
             variant="outline" 
             type="button"
-            onClick={handleGoogleLogin}
+            onClick={handleGoogleSignup}
             disabled={isLoading || isGoogleLoading}
             className="w-full h-11 bg-background/50 hover:bg-background transition-colors"
           >
@@ -173,9 +215,9 @@ export function LoginForm() {
         </div>
 
         <div className="text-center text-sm text-muted-foreground mt-4">
-          Don&apos;t have an account?{" "}
-          <Link href="/signup" className="font-medium text-primary hover:underline underline-offset-4">
-            Sign up
+          Already have an account?{" "}
+          <Link href="/login" className="font-medium text-primary hover:underline underline-offset-4">
+            Sign in
           </Link>
         </div>
       </CardContent>

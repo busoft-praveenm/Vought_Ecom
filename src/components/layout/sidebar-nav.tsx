@@ -10,6 +10,7 @@ export function SidebarNav({ isAdmin = false }: { isAdmin?: boolean }) {
 
   const isProducts = pathname.startsWith("/dashboard/products") && !pathname.startsWith("/dashboard/admin/products");
   const isAdminProducts = pathname.startsWith("/dashboard/admin/products");
+  const isAdminCustomers = pathname.startsWith("/dashboard/admin/customers");
   const isOverview = pathname === "/dashboard";
 
   return (
@@ -25,13 +26,7 @@ export function SidebarNav({ isAdmin = false }: { isAdmin?: boolean }) {
         <Activity className={`h-5 w-5 ${isOverview ? "text-zinc-50" : ""}`} />
         Overview
       </Link>
-      <Link 
-        href="#" 
-        className="flex items-center gap-3 rounded-lg px-3 py-2 text-zinc-400 transition-all hover:text-zinc-50 hover:bg-zinc-800/50"
-      >
-        <Users className="h-5 w-5" />
-        Customers
-      </Link>
+
       <Link 
         href="/dashboard/products" 
         className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${
@@ -51,17 +46,30 @@ export function SidebarNav({ isAdmin = false }: { isAdmin?: boolean }) {
         Settings
       </Link>
       {isAdmin && (
-        <Link 
-          href="/dashboard/admin/products" 
-          className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${
-            isAdminProducts 
-              ? "bg-zinc-800/80 text-zinc-50" 
-              : "text-zinc-400 hover:text-zinc-50 hover:bg-zinc-800/50"
-          }`}
-        >
-          <Shield className={`h-5 w-5 ${isAdminProducts ? "text-zinc-50" : ""}`} />
-          Admin Products
-        </Link>
+        <>
+          <Link 
+            href="/dashboard/admin/customers" 
+            className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${
+              isAdminCustomers 
+                ? "bg-zinc-800/80 text-zinc-50" 
+                : "text-zinc-400 hover:text-zinc-50 hover:bg-zinc-800/50"
+            }`}
+          >
+            <Users className={`h-5 w-5 ${isAdminCustomers ? "text-zinc-50" : ""}`} />
+            Customers
+          </Link>
+          <Link 
+            href="/dashboard/admin/products" 
+            className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${
+              isAdminProducts 
+                ? "bg-zinc-800/80 text-zinc-50" 
+                : "text-zinc-400 hover:text-zinc-50 hover:bg-zinc-800/50"
+            }`}
+          >
+            <Shield className={`h-5 w-5 ${isAdminProducts ? "text-zinc-50" : ""}`} />
+            Admin Products
+          </Link>
+        </>
       )}
     </nav>
   );
