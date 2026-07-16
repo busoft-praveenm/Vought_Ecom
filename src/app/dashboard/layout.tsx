@@ -33,22 +33,35 @@ export default async function DashboardLayout({
   }
 
   let cartCount = 0;
+  let isAdmin = false;
   try {
     if (token) {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/cart`, {
-        headers: {
-          ...(token ? { "Cookie": `access_token=${token}` } : {})
-        },
-        cache: 'no-store' // Keep it fresh
-      });
-      if (res.ok) {
-        const data = await res.json();
-        // Count number of distinct products, or you can sum quantity
+      const headers = { "Cookie": `access_token=${token}` };
+      const [cartRes, authRes] = await Promise.all([
+        fetch(`${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/cart`, {
+          headers,
+          cache: 'no-store'
+        }),
+        fetch(`${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/auth/me`, {
+          headers,
+          cache: 'no-store'
+        })
+      ]);
+      
+      if (cartRes.ok) {
+        const data = await cartRes.json();
         cartCount = data?.items?.length || 0; 
+      }
+      
+      if (authRes.ok) {
+        const authData = await authRes.json();
+        if (authData?.user?.role?.name === 'admin') {
+          isAdmin = true;
+        }
       }
     }
   } catch (err) {
-    console.error("Failed to fetch cart in layout", err);
+    console.error("Failed to fetch cart or auth in layout", err);
   }
 
   return (
@@ -95,7 +108,7 @@ export default async function DashboardLayout({
             Vought India
           </span>
         </div>
-        <SidebarNav />
+        <SidebarNav isAdmin={isAdmin} />
       </aside>
 
       {/* Main Content Area */}

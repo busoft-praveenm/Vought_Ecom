@@ -3,12 +3,13 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Activity, CreditCard, ShoppingCart, Users } from "lucide-react";
+import { Activity, CreditCard, ShoppingCart, Users, Shield } from "lucide-react";
 
-export function SidebarNav() {
+export function SidebarNav({ isAdmin = false }: { isAdmin?: boolean }) {
   const pathname = usePathname();
 
-  const isProducts = pathname.startsWith("/dashboard/products");
+  const isProducts = pathname.startsWith("/dashboard/products") && !pathname.startsWith("/dashboard/admin/products");
+  const isAdminProducts = pathname.startsWith("/dashboard/admin/products");
   const isOverview = pathname === "/dashboard";
 
   return (
@@ -49,6 +50,19 @@ export function SidebarNav() {
         <CreditCard className="h-5 w-5" />
         Settings
       </Link>
+      {isAdmin && (
+        <Link 
+          href="/dashboard/admin/products" 
+          className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${
+            isAdminProducts 
+              ? "bg-zinc-800/80 text-zinc-50" 
+              : "text-zinc-400 hover:text-zinc-50 hover:bg-zinc-800/50"
+          }`}
+        >
+          <Shield className={`h-5 w-5 ${isAdminProducts ? "text-zinc-50" : ""}`} />
+          Admin Products
+        </Link>
+      )}
     </nav>
   );
 }
