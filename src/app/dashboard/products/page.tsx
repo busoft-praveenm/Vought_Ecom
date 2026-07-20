@@ -9,11 +9,14 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
+  PaginationEllipsis,
 } from "@/components/pagination";
+import { generatePagination } from "@/lib/pagination";
 import { Card, CardContent, CardFooter } from "@/components/card";
 import { Button } from "@/components/button";
 import { Star, ShoppingCart } from "lucide-react";
-import { ProductSearch } from "./search-form";
+import { ProductSearch, ActiveFiltersBreadcrumbs } from "./search-form";
+import { getCategoriesAction } from "@/app/actions/category";
 
 type Product = {
   id: string;
@@ -31,13 +34,15 @@ type Product = {
 export default async function ProductsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string; search?: string }>;
+  searchParams: Promise<{ page?: string; search?: string; category?: string }>;
 }) {
   const params = await searchParams;
   const page = Number(params.page) || 1;
   const search = params.search || "";
-  
+  const category = params.category || "";
+
   let products: Product[] = [];
+  let categories: { id: number; name: string }[] = [];
   let totalPages = 1;
   let fetchError = false;
 
@@ -45,14 +50,16 @@ export default async function ProductsPage({
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_BASE_URL;
     const cookieStore = await cookies();
     const token = cookieStore.get("access_token")?.value;
-    console.log("Token in ProductsPage:", token ? "Token Exists" : "No Token");
 
-    const res = await fetch(`${backendUrl}/products?page=${page}&limit=10&search=${encodeURIComponent(search)}`, {
+    const res = await fetch(`${backendUrl}/products?page=${page}&limit=10&search=${encodeURIComponent(search)}&category=${encodeURIComponent(category)}`, {
       headers: {
         ...(token ? { "Cookie": `access_token=${token}` } : {}),
       },
       cache: "no-store",
     });
+
+    const catRes = await getCategoriesAction(1, 100);
+    categories = catRes.data || [];
 
     if (!res.ok) {
       console.warn(`Backend returned status ${res.status}.`);
@@ -71,24 +78,29 @@ export default async function ProductsPage({
   // If the API fails or returns no data, we will just show the empty state.
 
   const createPageUrl = (pageNumber: number) => {
-    const params = new URLSearchParams();
-    if (pageNumber > 1) params.set("page", pageNumber.toString());
-    if (search) params.set("search", search);
-    return `?${params.toString()}`;
+    const urlParams = new URLSearchParams();
+    if (pageNumber > 1) urlParams.set("page", pageNumber.toString());
+    if (search) urlParams.set("search", search);
+    if (category) urlParams.set("category", category);
+    return `?${urlParams.toString()}`;
   };
 
   return (
     <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+      <div className="bg-gradient-to-r from-orange-500 to-orange-300 rounded-xl p-6 mb-6 border border-yellow-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-sm">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Products</h1>
-          <p className="text-muted-foreground mt-1">Browse our premium selection of products.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-black">Products</h1>
+          <p className="text-foreground font-medium mt-1">Browse our premium selection of products.</p>
         </div>
-        
+
         <Suspense fallback={<div className="h-10 w-full sm:w-[300px] bg-muted animate-pulse rounded-md"></div>}>
-          <ProductSearch />
+          <ProductSearch categories={categories} />
         </Suspense>
       </div>
+
+      <Suspense fallback={null}>
+        <ActiveFiltersBreadcrumbs categories={categories} />
+      </Suspense>
 
       {fetchError && (
         <div className="mb-4 p-4 rounded-md bg-destructive/10 text-destructive border border-destructive/20 text-sm">
@@ -107,17 +119,19 @@ export default async function ProductsPage({
               <Card className="group overflow-hidden flex flex-col hover:shadow-lg transition-all border-border/50 bg-card hover:border-primary/50 cursor-pointer h-full">
                 <div className="relative w-full aspect-square bg-muted/30 overflow-hidden p-4 flex items-center justify-center">
                   {product.imageUrl ? (
-                    <img 
-                      src={product.imageUrl} 
+                    <img
+                      src={product.imageUrl}
                       alt={product.name}
                       className="w-full h-full object-cover rounded-md group-hover:scale-105 transition-transform duration-300 shadow-sm"
                     />
                   ) : (
                     <div className="w-full h-full bg-secondary/50 rounded-md flex items-center justify-center text-muted-foreground group-hover:scale-105 transition-transform duration-300">
-                      <span className="text-xs uppercase tracking-widest">{product.category}</span>
+                      <span className="text-xs uppercase tracking-widest">
+                        {typeof product.category === 'string' ? product.category : (product.category as any)?.name || '-'}
+                      </span>
                     </div>
                   )}
-                  
+
                   {product.stock === 0 ? (
                     <span className="absolute top-2 right-2 z-10 px-2 py-1 text-[10px] font-bold uppercase rounded-sm bg-destructive text-destructive-foreground">
                       Out of Stock
@@ -128,22 +142,21 @@ export default async function ProductsPage({
                     </span>
                   ) : null}
                 </div>
-                
-                <CardContent className="p-4 flex-1 flex flex-col">
-                  <h3 className="font-medium text-sm line-clamp-2 min-h-[40px] group-hover:text-primary transition-colors">
-                    {product.name}
-                  </h3>
-                  
-                  <div className="flex items-center gap-1 mt-2">
+
+                <CardContent className="p-5 flex-1 flex flex-col">
+                  <div className="text-[10px] font-bold text-primary mb-1.5 uppercase tracking-widest">
+                    {product.category ? (typeof product.category === 'string' ? product.category : (product.category as any).name) : "Product"}
+                  </div>
+                  <h3 className="font-bold text-xl leading-tight line-clamp-2 text-foreground mb-2">{product.name}</h3>
+                  <div className="flex items-center gap-1 mb-3 mt-auto">
                     <div className="flex">
                       {[...Array(5)].map((_, i) => (
-                        <Star 
-                          key={i} 
-                          className={`w-3.5 h-3.5 ${
-                            i < Math.floor(product.averageRating || 0) 
-                              ? "fill-orange-400 text-orange-400" 
-                              : "fill-muted text-muted"
-                          }`} 
+                        <Star
+                          key={i}
+                          className={`w-3.5 h-3.5 ${i < Math.floor(product.averageRating || 0)
+                            ? "fill-orange-400 text-orange-400"
+                            : "fill-muted text-muted"
+                            }`}
                         />
                       ))}
                     </div>
@@ -151,7 +164,7 @@ export default async function ProductsPage({
                       ({product.averageRating ? Number(product.averageRating).toFixed(1) : "0.0"})
                     </span>
                   </div>
-                  
+
                   <div className="mt-auto pt-3 flex items-end justify-between">
                     <div className="flex flex-col">
                       <span className="text-xl font-bold">
@@ -179,17 +192,24 @@ export default async function ProductsPage({
           <Pagination>
             <PaginationContent>
               <PaginationItem>
-                <PaginationPrevious 
-                  href={page > 1 ? createPageUrl(page - 1) : "#"} 
+                <PaginationPrevious
+                  href={page > 1 ? createPageUrl(page - 1) : "#"}
                   className={page <= 1 ? "pointer-events-none opacity-50" : ""}
                 />
               </PaginationItem>
-              
-              {Array.from({ length: totalPages }).map((_, i) => {
-                const pageNumber = i + 1;
+
+              {generatePagination(page, totalPages).map((p, i) => {
+                if (p === '...') {
+                  return (
+                    <PaginationItem key={`ellipsis-${i}`}>
+                      <PaginationEllipsis />
+                    </PaginationItem>
+                  );
+                }
+                const pageNumber = p as number;
                 return (
-                  <PaginationItem key={pageNumber}>
-                    <PaginationLink 
+                  <PaginationItem key={`page-${pageNumber}`}>
+                    <PaginationLink
                       href={createPageUrl(pageNumber)}
                       isActive={page === pageNumber}
                     >
@@ -200,8 +220,8 @@ export default async function ProductsPage({
               })}
 
               <PaginationItem>
-                <PaginationNext 
-                  href={page < totalPages ? createPageUrl(page + 1) : "#"} 
+                <PaginationNext
+                  href={page < totalPages ? createPageUrl(page + 1) : "#"}
                   className={page >= totalPages ? "pointer-events-none opacity-50" : ""}
                 />
               </PaginationItem>

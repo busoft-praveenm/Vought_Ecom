@@ -18,7 +18,11 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
+  PaginationEllipsis,
 } from "@/components/pagination";
+import { generatePagination } from "@/lib/pagination";
+import { ProductSearch, ActiveFiltersBreadcrumbs } from "../../products/search-form";
+import { getCategoriesAction } from "@/app/actions/category";
 
 type Product = {
   id: string;
@@ -34,13 +38,15 @@ type Product = {
 export default async function AdminProductsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string; search?: string }>;
+  searchParams: Promise<{ page?: string; search?: string; category?: string }>;
 }) {
   const params = await searchParams;
   const page = Number(params.page) || 1;
   const search = params.search || "";
-  
+  const category = params.category || "";
+
   let products: Product[] = [];
+  let categories: { id: number; name: string }[] = [];
   let totalPages = 1;
   let fetchError = false;
 
@@ -49,12 +55,15 @@ export default async function AdminProductsPage({
     const cookieStore = await cookies();
     const token = cookieStore.get("access_token")?.value;
 
-    const res = await fetch(`${backendUrl}/products?page=${page}&limit=10&search=${encodeURIComponent(search)}`, {
+    const res = await fetch(`${backendUrl}/products?page=${page}&limit=10&search=${encodeURIComponent(search)}&category=${encodeURIComponent(category)}`, {
       headers: {
         ...(token ? { "Cookie": `access_token=${token}` } : {}),
       },
       cache: "no-store",
     });
+
+    const catRes = await getCategoriesAction(1, 100);
+    categories = catRes.data || [];
 
     if (!res.ok) {
       fetchError = true;
@@ -72,24 +81,35 @@ export default async function AdminProductsPage({
     const urlParams = new URLSearchParams();
     if (pageNumber > 1) urlParams.set("page", pageNumber.toString());
     if (search) urlParams.set("search", search);
+    if (category) urlParams.set("category", category);
     return `?${urlParams.toString()}`;
   };
 
   return (
     <div className="w-full animate-in fade-in duration-500">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+      <div className="bg-gradient-to-r from-orange-500 to-orange-300 rounded-xl p-6 mb-6 border border-yellow-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-sm">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Admin Products</h1>
-          <p className="text-muted-foreground mt-1">Manage your store's inventory.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Products Inventory</h1>
+          <p className="text-foreground font-medium mt-1">Manage your store's inventory.</p>
         </div>
-        
-        <Link href="/dashboard/admin/products/new">
-          <Button className="flex items-center gap-2">
-            <Plus className="w-4 h-4" />
-            Add Product
-          </Button>
-        </Link>
+
+        <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto items-start sm:items-center">
+          <Suspense fallback={<div className="h-10 w-full sm:w-[300px] bg-muted animate-pulse rounded-md"></div>}>
+            <ProductSearch categories={categories} />
+          </Suspense>
+
+          <Link href="/dashboard/admin/products/new">
+            <Button className="flex items-center gap-2 whitespace-nowrap">
+              <Plus className="w-4 h-4" />
+              Add Product
+            </Button>
+          </Link>
+        </div>
       </div>
+
+      <Suspense fallback={null}>
+        <ActiveFiltersBreadcrumbs categories={categories} />
+      </Suspense>
 
       {fetchError && (
         <div className="mb-4 p-4 rounded-md bg-destructive/10 text-destructive border border-destructive/20 text-sm">
@@ -121,7 +141,7 @@ export default async function AdminProductsPage({
                 <TableRow key={product.id}>
                   <TableCell className="font-medium">{product.name}</TableCell>
                   <TableCell>{product.sku}</TableCell>
-                  <TableCell>{product.category}</TableCell>
+                  <TableCell>{product.category ? (typeof product.category === 'string' ? product.category : (product.category as any).name) : "-"}</TableCell>
                   <TableCell className="text-right">
                     {product.currency === 'INR' ? '₹' : '$'}{Number(product.price).toFixed(2)}
                   </TableCell>
@@ -149,26 +169,36 @@ export default async function AdminProductsPage({
           <Pagination>
             <PaginationContent>
               <PaginationItem>
-                <PaginationPrevious 
-                  href={page > 1 ? createPageUrl(page - 1) : "#"} 
+                <PaginationPrevious
+                  href={page > 1 ? createPageUrl(page - 1) : "#"}
                   className={page <= 1 ? "pointer-events-none opacity-50" : ""}
                 />
               </PaginationItem>
-              
-              {Array.from({ length: totalPages }).map((_, i) => (
-                <PaginationItem key={i + 1}>
-                  <PaginationLink 
-                    href={createPageUrl(i + 1)}
-                    isActive={page === i + 1}
-                  >
-                    {i + 1}
-                  </PaginationLink>
-                </PaginationItem>
-              ))}
+
+              {generatePagination(page, totalPages).map((p, i) => {
+                if (p === '...') {
+                  return (
+                    <PaginationItem key={`ellipsis-${i}`}>
+                      <PaginationEllipsis />
+                    </PaginationItem>
+                  );
+                }
+
+                return (
+                  <PaginationItem key={`page-${p}`}>
+                    <PaginationLink
+                      href={createPageUrl(p as number)}
+                      isActive={page === p}
+                    >
+                      {p}
+                    </PaginationLink>
+                  </PaginationItem>
+                );
+              })}
 
               <PaginationItem>
-                <PaginationNext 
-                  href={page < totalPages ? createPageUrl(page + 1) : "#"} 
+                <PaginationNext
+                  href={page < totalPages ? createPageUrl(page + 1) : "#"}
                   className={page >= totalPages ? "pointer-events-none opacity-50" : ""}
                 />
               </PaginationItem>

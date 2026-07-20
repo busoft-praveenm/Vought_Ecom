@@ -1,5 +1,6 @@
 import Image from "next/image";
 import { SignupForm } from "./signup-form";
+import { AnimatedLogo } from "@/components/ui/animated-logo";
 
 export const metadata = {
   title: "Sign up - Vought Ecom",
@@ -8,19 +9,11 @@ export const metadata = {
 
 export default function SignupPage() {
   return (
-    <div className="w-full h-screen grid lg:grid-cols-2">
-      <div className="relative hidden lg:block bg-zinc-950">
+    <div className="w-full h-screen grid lg:grid-cols-2 overflow-hidden">
+      <div className="relative hidden lg:block bg-zinc-950 overflow-hidden">
         <style dangerouslySetInnerHTML={{__html: `
-          .animate-title {
-            animation: tracking-in-expand 1.2s cubic-bezier(0.215, 0.610, 0.355, 1.000) both;
-          }
           .animate-desc {
             animation: fade-in-bottom 1.2s cubic-bezier(0.390, 0.575, 0.565, 1.000) 0.6s both;
-          }
-          @keyframes tracking-in-expand {
-            0% { letter-spacing: -0.5em; opacity: 0; }
-            40% { opacity: 0.6; }
-            100% { letter-spacing: -0.025em; opacity: 1; }
           }
           @keyframes fade-in-bottom {
             0% { transform: translateY(30px); opacity: 0; }
@@ -31,16 +24,15 @@ export default function SignupPage() {
           src="/login_bg.png"
           alt="Premium abstract background"
           fill
+          sizes="(max-width: 1024px) 100vw, 50vw"
           className="object-cover opacity-90"
           priority
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
         
         <div className="absolute bottom-16 left-12 z-10 max-w-xl">
-          <h1 className="animate-title text-5xl font-extrabold text-white drop-shadow-lg mb-6">
-            Join Vought Ecom
-          </h1>
-          <p className="animate-desc text-lg text-zinc-300 drop-shadow-md leading-relaxed">
+          <AnimatedLogo />
+          <p className="animate-desc text-lg text-zinc-300 drop-shadow-md leading-relaxed mt-12">
             Create an account to unlock exclusive features, manage your profile, and enjoy a seamless shopping experience tailored just for you.
           </p>
         </div>

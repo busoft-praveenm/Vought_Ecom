@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 // This function can be marked `async` if using `await` inside
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   // If the user is trying to access a dashboard route
   if (request.nextUrl.pathname.startsWith('/dashboard')) {
     const token = request.cookies.get('access_token')?.value;
@@ -44,7 +44,7 @@ export function middleware(request: NextRequest) {
       }
     } catch (e) {
       // If token parsing fails (malformed token), redirect to login
-      console.error("Failed to parse token in middleware:", e);
+      console.error("Failed to parse token in proxy:", e);
       const response = NextResponse.redirect(new URL('/login', request.url));
       response.cookies.delete('access_token');
       return response;

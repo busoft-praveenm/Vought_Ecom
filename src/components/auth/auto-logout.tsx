@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 export function AutoLogout({ exp }: { exp: number | undefined }) {
   const router = useRouter();
@@ -20,7 +21,12 @@ export function AutoLogout({ exp }: { exp: number | undefined }) {
 
     // Set timeout to logout when token expires
     const timeout = setTimeout(() => {
-      handleAutoLogout();
+      toast.info("Your session has expired. You are being logged out...");
+      
+      // Give the user 3 seconds to read the toast before actually logging out
+      setTimeout(() => {
+        handleAutoLogout();
+      }, 3000);
     }, timeUntilExpiry * 1000);
 
     return () => clearTimeout(timeout);

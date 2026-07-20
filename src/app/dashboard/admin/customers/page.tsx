@@ -1,5 +1,6 @@
 import React from "react";
 import { cookies } from "next/headers";
+import { CustomerStatusToggle } from "./customer-status-toggle";
 import {
   Table,
   TableBody,
@@ -15,11 +16,17 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
+  PaginationEllipsis,
 } from "@/components/pagination";
+import { generatePagination } from "@/lib/pagination";
 
 type Customer = {
   id: number;
   email: string;
+  status: string;
+  role?: {
+    name: string;
+  };
 };
 
 export default async function AdminCustomersPage({
@@ -67,9 +74,11 @@ export default async function AdminCustomersPage({
 
   return (
     <div className="w-full animate-in fade-in duration-500">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">Customers</h1>
-        <p className="text-muted-foreground mt-1">View the list of registered users.</p>
+      <div className="bg-gradient-to-r from-orange-500 to-orange-300 rounded-xl p-6 mb-6 border border-yellow-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-sm">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Customers</h1>
+          <p className="text-foreground font-medium mt-1">View the list of registered users.</p>
+        </div>
       </div>
 
       {fetchError && (
@@ -83,6 +92,9 @@ export default async function AdminCustomersPage({
           <TableHeader>
             <TableRow>
               <TableHead>Email Address</TableHead>
+              <TableHead>Role</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="w-[100px] text-right">Action</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -96,6 +108,25 @@ export default async function AdminCustomersPage({
               customers.map((customer) => (
                 <TableRow key={customer.id}>
                   <TableCell className="font-medium">{customer.email}</TableCell>
+                  <TableCell className="capitalize">{customer.role?.name || "User"}</TableCell>
+                  <TableCell>
+                    <span
+                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                        customer.status === "active"
+                          ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
+                          : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
+                      }`}
+                    >
+                      {customer.status || "active"}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <CustomerStatusToggle
+                      customerId={customer.id}
+                      initialStatus={customer.status || "active"}
+                      canDeactivate={customer.email !== process.env.ADMIN_EMAIL}
+                    />
+                  </TableCell>
                 </TableRow>
               ))
             )}
@@ -114,16 +145,26 @@ export default async function AdminCustomersPage({
                 />
               </PaginationItem>
               
-              {Array.from({ length: totalPages }).map((_, i) => (
-                <PaginationItem key={i + 1}>
-                  <PaginationLink 
-                    href={createPageUrl(i + 1)}
-                    isActive={page === i + 1}
-                  >
-                    {i + 1}
-                  </PaginationLink>
-                </PaginationItem>
-              ))}
+              {generatePagination(page, totalPages).map((p, i) => {
+                if (p === '...') {
+                  return (
+                    <PaginationItem key={`ellipsis-${i}`}>
+                      <PaginationEllipsis />
+                    </PaginationItem>
+                  );
+                }
+                
+                return (
+                  <PaginationItem key={`page-${p}`}>
+                    <PaginationLink 
+                      href={createPageUrl(p as number)}
+                      isActive={page === p}
+                    >
+                      {p}
+                    </PaginationLink>
+                  </PaginationItem>
+                );
+              })}
 
               <PaginationItem>
                 <PaginationNext 

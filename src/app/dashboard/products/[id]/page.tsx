@@ -95,7 +95,9 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
         {/* Product Info */}
         <div className="flex flex-col">
           <div className="mb-2">
-            <span className="text-xs uppercase tracking-widest text-primary font-semibold">{product.category}</span>
+            <span className="text-xs uppercase tracking-widest text-primary font-semibold">
+              {typeof product.category === 'string' ? product.category : (product.category as any)?.name || '-'}
+            </span>
           </div>
           <h1 className="text-3xl font-bold mb-4">{product.name}</h1>
 

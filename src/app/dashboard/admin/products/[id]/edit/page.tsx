@@ -1,14 +1,18 @@
 import React from "react";
 import { ProductForm } from "../../product-form";
 import { cookies } from "next/headers";
+import { getCategoriesAction } from "@/app/actions/category";
 
 export default async function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   
   let initialData = null;
   let fetchError = false;
+  let categories = [];
 
   try {
+    const categoriesResponse = await getCategoriesAction(1, 100);
+    categories = categoriesResponse.data || [];
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_BASE_URL;
     const cookieStore = await cookies();
     const token = cookieStore.get("access_token")?.value;
@@ -30,7 +34,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
           sku: product.sku || "",
           price: product.price ? String(product.price) : "",
           stock: product.stock ? String(product.stock) : "0",
-          category: product.category || "",
+          category: product.category ? String(product.category.id) : "",
           brand: product.brand || "",
           imageUrl: product.imageUrl || "",
           description: product.description || "",
@@ -56,7 +60,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
 
   return (
     <div className="w-full animate-in fade-in duration-500 flex justify-center">
-      <ProductForm initialData={initialData} productId={id} />
+      <ProductForm initialData={initialData} productId={id} categories={categories} />
     </div>
   );
 }

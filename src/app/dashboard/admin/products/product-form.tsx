@@ -22,10 +22,12 @@ type ProductData = {
 
 export function ProductForm({ 
   initialData, 
-  productId 
+  productId,
+  categories = []
 }: { 
   initialData?: ProductData, 
-  productId?: string 
+  productId?: string,
+  categories?: { id: number; name: string }[]
 }) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -54,6 +56,7 @@ export function ProductForm({
         ...formData,
         price: parseFloat(formData.price),
         stock: parseInt(formData.stock, 10),
+        categoryId: formData.category ? parseInt(formData.category, 10) : undefined,
       };
 
       const result = await saveProductAction(payload, productId);
@@ -138,13 +141,19 @@ export function ProductForm({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="category">Category</Label>
-              <Input
+              <select
                 id="category"
                 name="category"
                 value={formData.category}
-                onChange={handleChange}
-                placeholder="Electronics"
-              />
+                onChange={handleChange as any}
+                required
+                className="flex h-10 w-full rounded-md border border-input bg-background/50 px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <option value="" disabled>Select a category</option>
+                {categories.map(cat => (
+                  <option key={cat.id} value={cat.id.toString()}>{cat.name}</option>
+                ))}
+              </select>
             </div>
             <div className="space-y-2">
               <Label htmlFor="brand">Brand</Label>

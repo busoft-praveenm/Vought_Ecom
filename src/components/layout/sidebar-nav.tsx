@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Activity, CreditCard, ShoppingCart, Users, Shield } from "lucide-react";
+import { Activity, LayoutGrid, ShoppingCart, Users, Package } from "lucide-react";
 
 export function SidebarNav({ isAdmin = false }: { isAdmin?: boolean }) {
   const pathname = usePathname();
@@ -38,15 +38,19 @@ export function SidebarNav({ isAdmin = false }: { isAdmin?: boolean }) {
         <ShoppingCart className={`h-5 w-5 ${isProducts ? "text-zinc-50" : ""}`} />
         Products
       </Link>
-      <Link 
-        href="#" 
-        className="flex items-center gap-3 rounded-lg px-3 py-2 text-zinc-400 transition-all hover:text-zinc-50 hover:bg-zinc-800/50"
-      >
-        <CreditCard className="h-5 w-5" />
-        Settings
-      </Link>
       {isAdmin && (
         <>
+          <Link 
+            href="/dashboard/admin/categories" 
+            className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${
+              pathname.startsWith("/dashboard/admin/categories")
+                ? "bg-zinc-800/80 text-zinc-50" 
+                : "text-zinc-400 hover:text-zinc-50 hover:bg-zinc-800/50"
+            }`}
+          >
+            <LayoutGrid className={`h-5 w-5 ${pathname.startsWith("/dashboard/admin/categories") ? "text-zinc-50" : ""}`} />
+            Categories
+          </Link>
           <Link 
             href="/dashboard/admin/customers" 
             className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${
@@ -66,8 +70,8 @@ export function SidebarNav({ isAdmin = false }: { isAdmin?: boolean }) {
                 : "text-zinc-400 hover:text-zinc-50 hover:bg-zinc-800/50"
             }`}
           >
-            <Shield className={`h-5 w-5 ${isAdminProducts ? "text-zinc-50" : ""}`} />
-            Admin Products
+            <Package className={`h-5 w-5 ${isAdminProducts ? "text-zinc-50" : ""}`} />
+            Products Inventory
           </Link>
         </>
       )}
