@@ -79,7 +79,6 @@ export class UserDbService {
       .createQueryBuilder('user')
       .leftJoinAndSelect('user.role', 'role')
       .leftJoinAndSelect('user.profile', 'profile')
-      .where('role.name = :roleName', { roleName: 'user' })
       .skip(skip)
       .take(limit)
       .getManyAndCount();

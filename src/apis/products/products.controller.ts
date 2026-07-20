@@ -20,9 +20,10 @@ export class ProductsController {
   async getProducts(
     @Query('page') page = '1',
     @Query('limit') limit = '10',
-    @Query('search') search = ''
+    @Query('search') search = '',
+    @Query('category') category = ''
   ){
-    return this.productsService.getProducts(Number(page),Number(limit),search);
+    return this.productsService.getProducts(Number(page),Number(limit),search, category);
   }
 
   @UseGuards(FirebaseAuthGuard)

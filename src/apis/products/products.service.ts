@@ -11,8 +11,8 @@ export class ProductsService {
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ){}
 
-  async getProducts(page: number, limit: number, search: string){
-    return this.productsDbService.getProducts(page, limit, search);
+  async getProducts(page: number, limit: number, search: string, categoryId: string){
+    return this.productsDbService.getProducts(page, limit, search, categoryId);
   }
 
   async getProduct(id: number){

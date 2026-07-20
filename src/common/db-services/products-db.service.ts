@@ -16,6 +16,7 @@ export class ProductsDbService {
   async findById(id: number):Promise<ProductsDb>{
     const product = await this.productRepo
       .createQueryBuilder('product')
+      .leftJoinAndSelect('product.category', 'category')
       .where('product.id = :id', {id})
       .getOne()
 
@@ -39,8 +40,9 @@ export class ProductsDbService {
     return product;
   }
 
-  async getProducts(page=1, limit=10, search=''){
-    const queryBuilder = this.productRepo.createQueryBuilder('product');
+  async getProducts(page=1, limit=10, search='', categoryId=''){
+    const queryBuilder = this.productRepo.createQueryBuilder('product')
+      .leftJoinAndSelect('product.category', 'category');
     queryBuilder.where('product.isDeleted = :isDeleted', { isDeleted: false });
 
     if(search){
@@ -50,7 +52,7 @@ export class ProductsDbService {
             product.name
               LIKE :search
             OR
-            product.category
+            category.name
               LIKE :search
             OR
             product.brand
@@ -61,6 +63,13 @@ export class ProductsDbService {
           search: `%${search}%`
         },
       );
+    }
+
+    if(categoryId){
+      const ids = categoryId.split(',').map(id => Number(id.trim())).filter(id => !isNaN(id));
+      if (ids.length > 0) {
+        queryBuilder.andWhere('category.id IN (:...ids)', { ids });
+      }
     }
 
     queryBuilder
@@ -92,6 +101,7 @@ export class ProductsDbService {
   async getProductWithReviews(id: number) {
     const product = await this.productRepo
       .createQueryBuilder('product')
+      .leftJoinAndSelect('product.category', 'category')
       .where('product.id = :id', { id })
       .andWhere('product.isDeleted = :isDeleted', { isDeleted: false })
       .getOne();
@@ -111,25 +121,35 @@ export class ProductsDbService {
     return { product, reviews };
   }
 
-  async createProduct(data: Partial<ProductsDb>): Promise<ProductsDb> {
+  async createProduct(data: Partial<ProductsDb> & { categoryId?: number }): Promise<ProductsDb> {
     const sku = data.sku || `SKU-${Date.now()}`;
     const productUid = data.product_uid || uuidv4();
     
+    const { categoryId, ...productData } = data;
+    
     const newProduct = this.productRepo.create({
-      ...data,
+      ...productData,
       sku,
       product_uid: productUid,
+      category: categoryId ? { id: categoryId } as any : undefined,
     });
     
     const saved = await this.productRepo.save(newProduct);
     return this.findById(saved.id);
   }
 
-  async updateProduct(id: number, data: Partial<ProductsDb>): Promise<ProductsDb> {
+  async updateProduct(id: number, data: Partial<ProductsDb> & { categoryId?: number }): Promise<ProductsDb> {
+    const { categoryId, ...productData } = data;
+    
+    const updatePayload: any = { ...productData };
+    if (categoryId !== undefined) {
+      updatePayload.category = { id: categoryId };
+    }
+
     await this.productRepo
       .createQueryBuilder()
       .update(ProductsDb)
-      .set(data)
+      .set(updatePayload)
       .where('id = :id', { id })
       .execute();
       

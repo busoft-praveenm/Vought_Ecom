@@ -1,5 +1,6 @@
 import { Column, CreateDateColumn, DeleteDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { UserDb } from "./tbl_user.entity";
+import { CategoryDb } from "./tbl_category.entity";
 
 export enum ProductStatus {
   ACTIVE = 'active',
@@ -30,8 +31,8 @@ export class ProductsDb {
   @Column({ default: 0 })
   stock: number;
 
-  @Column({ nullable: true })
-  category: string;
+  @ManyToOne(() => CategoryDb, category => category.products, { nullable: true })
+  category: CategoryDb;
 
   @Column({ nullable: true })
   brand: string;
