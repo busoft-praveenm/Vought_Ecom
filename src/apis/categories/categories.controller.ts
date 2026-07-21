@@ -16,10 +16,15 @@ export class CategoriesController {
     return this.categoryDbService.findAll(Number(page), Number(limit));
   }
 
+  @Get('random')
+  async getRandomCategories(@Query('limit') limit = '6') {
+    return this.categoryDbService.getRandomCategories(Number(limit));
+  }
+
   @UseGuards(FirebaseAuthGuard, RolesGuard)
   @Roles('admin')
   @Post()
-  async createCategory(@Body() body: { name: string; description?: string }) {
-    return this.categoryDbService.createCategory(body.name, body.description);
+  async createCategory(@Body() body: { name: string; description?: string; imageUrl?: string }) {
+    return this.categoryDbService.createCategory(body.name, body.description, body.imageUrl);
   }
 }

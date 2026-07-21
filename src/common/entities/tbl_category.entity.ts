@@ -12,6 +12,9 @@ export class CategoryDb {
   @Column({ type: 'text', nullable: true })
   description: string;
 
+  @Column({ type: 'text', nullable: true })
+  imageUrl: string;
+
   @Column({ type: 'boolean', default: true })
   isActive: boolean;
 
