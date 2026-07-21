@@ -94,7 +94,7 @@ export function LoginForm() {
   return (
     <Card className="w-full max-w-md bg-card/60 backdrop-blur-xl border-border shadow-2xl z-10 animate-in fade-in zoom-in-95 duration-500">
       <CardHeader className="space-y-2">
-        <CardTitle className="text-3xl font-bold tracking-tight">Welcome back</CardTitle>
+        <CardTitle className="text-3xl font-bold tracking-tight">Welcome!</CardTitle>
         <CardDescription className="text-muted-foreground text-base">
           Enter your credentials to access your account
         </CardDescription>

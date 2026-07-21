@@ -10,6 +10,7 @@ import { createCategoryAction } from "@/app/actions/category";
 export function CategoryForm() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -18,13 +19,15 @@ export function CategoryForm() {
     
     setIsLoading(true);
     try {
-      const result = await createCategoryAction({ name, description });
+      const finalImageUrl = imageUrl.trim() || "https://media.istockphoto.com/id/510693044/photo/house-cleaning-product-on-wood-table.jpg?s=612x612&w=0&k=20&c=EZfeRCDgSMPnqG684zQBOqyNfDGx9JWTXS1Q2Lhrjy4=";
+      const result = await createCategoryAction({ name, description, imageUrl: finalImageUrl });
       if (!result.success) {
         throw new Error(result.error);
       }
       toast.success("Category created successfully");
       setName("");
       setDescription("");
+      setImageUrl("");
     } catch (error: any) {
       toast.error(error.message || "Failed to create category");
     } finally {
@@ -53,6 +56,16 @@ export function CategoryForm() {
           value={description} 
           onChange={(e) => setDescription(e.target.value)} 
           placeholder="Category description..." 
+          disabled={isLoading}
+        />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="imageUrl">Image URL (optional)</Label>
+        <Input 
+          id="imageUrl" 
+          value={imageUrl} 
+          onChange={(e) => setImageUrl(e.target.value)} 
+          placeholder="https://..." 
           disabled={isLoading}
         />
       </div>

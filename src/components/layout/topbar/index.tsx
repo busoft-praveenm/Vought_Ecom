@@ -2,10 +2,11 @@
 
 import React from "react";
 import { useRouter } from "next/navigation";
-import { Search, Bell, Settings, User, LogOut, ShoppingCart } from "lucide-react";
+import { Search, Bell, Settings, User, LogOut, ShoppingCart, Menu } from "lucide-react";
 import { Input } from "@/components/input";
 import { Button } from "@/components/button";
 import Link from "next/link";
+import { useSidebar } from "@/components/layout/client-layout";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,6 +19,7 @@ import {
 
 export const Topbar = ({ cartCount = 0 }: { cartCount?: number }) => {
   const router = useRouter();
+  const { toggle, isOpen } = useSidebar();
 
   const handleLogout = async () => {
     try {
@@ -35,8 +37,51 @@ export const Topbar = ({ cartCount = 0 }: { cartCount?: number }) => {
   };
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-zinc-800 bg-[#494F55] backdrop-blur-md px-4 sm:px-6 shadow-sm">
+    <header className="sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-zinc-800 bg-[#494F55] backdrop-blur-md px-4 sm:px-6 shadow-sm transition-all duration-300">
       <div className="flex items-center gap-4">
+        <Button variant="ghost" size="icon" onClick={toggle} className="text-zinc-400 hover:text-zinc-50 hover:bg-zinc-800/50 -ml-2 shrink-0">
+          <Menu className="h-5 w-5" />
+          <span className="sr-only">Toggle Sidebar</span>
+        </Button>
+        <div className="flex items-center relative mr-4">
+          <style dangerouslySetInnerHTML={{
+            __html: `
+            @keyframes logo-shimmer {
+              0% { background-position: 0% 50%; }
+              100% { background-position: 200% 50%; }
+            }
+            .animate-logo-shimmer {
+              background: linear-gradient(
+                to right,
+                #FF9933 0%,
+                #FFFFFF 33%,
+                #138808 66%,
+                #FF9933 100%
+              );
+              background-size: 200% auto;
+              color: transparent;
+              -webkit-background-clip: text;
+              background-clip: text;
+              animation: logo-shimmer 4s linear infinite;
+            }
+            .dark .animate-logo-shimmer {
+              background: linear-gradient(
+                to right,
+                #FF9933 0%,
+                #FFFFFF 33%,
+                #138808 66%,
+                #FF9933 100%
+              );
+              background-size: 200% auto;
+              color: transparent;
+              -webkit-background-clip: text;
+              background-clip: text;
+            }
+          `}} />
+          <span className="text-xl font-bold tracking-tight animate-logo-shimmer">
+            Vought India
+          </span>
+        </div>
         <form className="hidden sm:flex relative">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-zinc-500" />
           <Input

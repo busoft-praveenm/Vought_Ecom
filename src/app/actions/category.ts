@@ -21,7 +21,25 @@ export async function getCategoriesAction(page: number = 1, limit: number = 10) 
   }
 }
 
-export async function createCategoryAction(data: { name: string; description?: string }) {
+export async function getRandomCategoriesAction(limit: number = 6) {
+  try {
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_BASE_URL || "http://localhost:3001";
+    const res = await fetch(`${backendUrl}/categories/random?limit=${limit}`, {
+      cache: "no-store",
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to fetch random categories");
+    }
+
+    return await res.json();
+  } catch (error) {
+    console.error("Error fetching random categories:", error);
+    return [];
+  }
+}
+
+export async function createCategoryAction(data: { name: string; description?: string; imageUrl?: string }) {
   try {
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_BASE_URL || "http://localhost:3001";
     const cookieStore = await cookies();

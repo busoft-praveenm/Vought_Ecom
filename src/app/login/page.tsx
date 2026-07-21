@@ -9,7 +9,8 @@ export const metadata = {
 
 export default function LoginPage() {
   return (
-    <div className="w-full h-screen grid lg:grid-cols-2 overflow-hidden">
+    <div className="w-full min-h-screen grid lg:grid-cols-2 overflow-hidden">
+      {/* Left Column (Desktop Only) */}
       <div className="relative hidden lg:block bg-zinc-950 overflow-hidden">
         <style dangerouslySetInnerHTML={{__html: `
           .animate-desc {
@@ -28,7 +29,6 @@ export default function LoginPage() {
           className="object-cover opacity-90"
           priority
         />
-        {/* Replaced white lighting gradient with a dark bottom gradient for perfect text contrast */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
         
         <div className="absolute bottom-16 left-12 z-10 max-w-xl">
@@ -40,12 +40,32 @@ export default function LoginPage() {
       </div>
 
       {/* Right Side: Login Form */}
-      <div className="flex items-center justify-center bg-background p-6 lg:p-12 relative overflow-hidden">
-        {/* Decorative background blurs */}
-        <div className="absolute top-1/4 left-1/4 w-72 h-72 bg-primary/30 rounded-full blur-[100px] pointer-events-none" />
-        <div className="absolute bottom-1/4 right-1/4 w-72 h-72 bg-indigo-500/20 rounded-full blur-[100px] pointer-events-none" />
+      <div className="flex flex-col items-center justify-center bg-background p-6 lg:p-12 relative overflow-hidden min-h-screen lg:min-h-0 pt-48 lg:pt-0">
+        
+        {/* Mobile Background and Logo (Hidden on Desktop) */}
+        <div className="absolute inset-0 z-0 lg:hidden pointer-events-none">
+          <Image
+            src="/login_bg.png"
+            alt="Mobile background"
+            fill
+            sizes="100vw"
+            className="object-cover opacity-50"
+            priority
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
+          
+          <div className="absolute top-16 w-full flex justify-center [&_h1]:justify-center">
+            <AnimatedLogo />
+          </div>
+        </div>
 
-        <LoginForm />
+        {/* Decorative background blurs (Desktop) */}
+        <div className="hidden lg:block absolute top-1/4 left-1/4 w-72 h-72 bg-primary/30 rounded-full blur-[100px] pointer-events-none z-0" />
+        <div className="hidden lg:block absolute bottom-1/4 right-1/4 w-72 h-72 bg-indigo-500/20 rounded-full blur-[100px] pointer-events-none z-0" />
+
+        <div className="relative z-10 w-full flex justify-center">
+          <LoginForm />
+        </div>
       </div>
     </div>
   );

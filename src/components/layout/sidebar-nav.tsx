@@ -15,17 +15,19 @@ export function SidebarNav({ isAdmin = false }: { isAdmin?: boolean }) {
 
   return (
     <nav className="flex flex-col gap-2 p-4 text-sm font-medium">
-      <Link 
-        href="/dashboard" 
-        className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${
-          isOverview 
-            ? "bg-zinc-800/80 text-zinc-50" 
-            : "text-zinc-400 hover:text-zinc-50 hover:bg-zinc-800/50"
-        }`}
-      >
-        <Activity className={`h-5 w-5 ${isOverview ? "text-zinc-50" : ""}`} />
-        Overview
-      </Link>
+      {isAdmin && (
+        <Link 
+          href="/dashboard" 
+          className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${
+            isOverview 
+              ? "bg-zinc-800/80 text-zinc-50" 
+              : "text-zinc-400 hover:text-zinc-50 hover:bg-zinc-800/50"
+          }`}
+        >
+          <Activity className={`h-5 w-5 ${isOverview ? "text-zinc-50" : ""}`} />
+          Overview
+        </Link>
+      )}
 
       <Link 
         href="/dashboard/products" 
