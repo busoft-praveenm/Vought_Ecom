@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Activity, LayoutGrid, ShoppingCart, Users, Package } from "lucide-react";
+import { Activity, LayoutGrid, ShoppingCart, Users, Package, Bookmark } from "lucide-react";
 
 export function SidebarNav({ isAdmin = false }: { isAdmin?: boolean }) {
   const pathname = usePathname();
@@ -52,6 +52,17 @@ export function SidebarNav({ isAdmin = false }: { isAdmin?: boolean }) {
           >
             <LayoutGrid className={`h-5 w-5 ${pathname.startsWith("/dashboard/admin/categories") ? "text-zinc-50" : ""}`} />
             Categories
+          </Link>
+          <Link 
+            href="/dashboard/admin/brands" 
+            className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${
+              pathname.startsWith("/dashboard/admin/brands")
+                ? "bg-zinc-800/80 text-zinc-50" 
+                : "text-zinc-400 hover:text-zinc-50 hover:bg-zinc-800/50"
+            }`}
+          >
+            <Bookmark className={`h-5 w-5 ${pathname.startsWith("/dashboard/admin/brands") ? "text-zinc-50" : ""}`} />
+            Brands
           </Link>
           <Link 
             href="/dashboard/admin/customers" 

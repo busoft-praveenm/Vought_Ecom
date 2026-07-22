@@ -87,10 +87,10 @@ export default async function AdminProductsPage({
 
   return (
     <div className="w-full animate-in fade-in duration-500">
-      <div className="bg-gradient-to-r from-orange-500 to-orange-300 rounded-xl p-6 mb-6 border border-yellow-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-sm">
+      <div className="bg-gradient-to-r from-teal-500 to-teal-100 rounded-xl p-6 mb-6 border border-teal-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-sm">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">Products Inventory</h1>
-          <p className="text-foreground font-medium mt-1">Manage your store's inventory.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-white">Products Inventory</h1>
+          <p className="text-white font-medium mt-1">Manage your store's inventory.</p>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto items-start sm:items-center">

@@ -89,7 +89,7 @@ function AdminOverview() {
 }
 
 async function UserLanding() {
-  const categories = await getRandomCategoriesAction(6);
+  const categories = await getRandomCategoriesAction(10);
 
   return (
     <div className="w-full animate-in fade-in zoom-in-95 duration-700">

@@ -11,7 +11,8 @@ type ProductDetails = {
     name: string;
     price: number;
     stock: number;
-    category: string;
+    category: string | any;
+    brand: string | any;
     status: string;
     imageUrl?: string;
     averageRating?: number;
@@ -97,6 +98,7 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
           <div className="mb-2">
             <span className="text-xs uppercase tracking-widest text-primary font-semibold">
               {typeof product.category === 'string' ? product.category : (product.category as any)?.name || '-'}
+              {product.brand && ` • ${typeof product.brand === 'string' ? product.brand : (product.brand as any)?.name || ''}`}
             </span>
           </div>
           <h1 className="text-3xl font-bold mb-4">{product.name}</h1>

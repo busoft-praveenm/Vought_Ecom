@@ -74,10 +74,10 @@ export default async function AdminCustomersPage({
 
   return (
     <div className="w-full animate-in fade-in duration-500">
-      <div className="bg-gradient-to-r from-orange-500 to-orange-300 rounded-xl p-6 mb-6 border border-yellow-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-sm">
+      <div className="bg-gradient-to-r from-teal-500 to-teal-100 rounded-xl p-6 mb-6 border border-teal-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-sm">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">Customers</h1>
-          <p className="text-foreground font-medium mt-1">View the list of registered users.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-white">Customers</h1>
+          <p className="text-white font-medium mt-1">View the list of registered users.</p>
         </div>
       </div>
 

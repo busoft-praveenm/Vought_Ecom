@@ -27,7 +27,8 @@ export function ProductForm({
 }: { 
   initialData?: ProductData, 
   productId?: string,
-  categories?: { id: number; name: string }[]
+  categories?: { id: number; name: string }[],
+  brands?: { id: number; name: string }[]
 }) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -57,6 +58,7 @@ export function ProductForm({
         price: parseFloat(formData.price),
         stock: parseInt(formData.stock, 10),
         categoryId: formData.category ? parseInt(formData.category, 10) : undefined,
+        brandId: formData.brand ? parseInt(formData.brand, 10) : undefined,
       };
 
       const result = await saveProductAction(payload, productId);
@@ -157,13 +159,19 @@ export function ProductForm({
             </div>
             <div className="space-y-2">
               <Label htmlFor="brand">Brand</Label>
-              <Input
+              <select
                 id="brand"
                 name="brand"
                 value={formData.brand}
-                onChange={handleChange}
-                placeholder="BrandName"
-              />
+                onChange={handleChange as any}
+                required
+                className="flex h-10 w-full rounded-md border border-input bg-background/50 px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                <option value="" disabled>Select a brand</option>
+                {brands?.map(brand => (
+                  <option key={brand.id} value={brand.id.toString()}>{brand.name}</option>
+                ))}
+              </select>
             </div>
           </div>
 

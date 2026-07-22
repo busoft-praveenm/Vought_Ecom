@@ -23,7 +23,8 @@ type Product = {
   name: string;
   price: number;
   stock: number;
-  category: string;
+  category: string | any;
+  brand?: string | any;
   status: string;
   imageUrl?: string;
   averageRating?: number;
@@ -87,10 +88,10 @@ export default async function ProductsPage({
 
   return (
     <div className="w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="bg-gradient-to-r from-orange-500 to-orange-300 rounded-xl p-6 mb-6 border border-yellow-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-sm">
+      <div className="bg-gradient-to-r from-teal-500 to-teal-100 rounded-xl p-6 mb-6 border border-teal-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 shadow-sm">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-black">Products</h1>
-          <p className="text-foreground font-medium mt-1">Browse our premium selection of products.</p>
+          <h1 className="text-3xl font-bold tracking-tight text-white">Products</h1>
+          <p className="text-white font-medium mt-1">Browse our premium selection of products.</p>
         </div>
 
         <Suspense fallback={<div className="h-10 w-full sm:w-[300px] bg-muted animate-pulse rounded-md"></div>}>
@@ -144,8 +145,9 @@ export default async function ProductsPage({
                 </div>
 
                 <CardContent className="p-5 flex-1 flex flex-col">
-                  <div className="text-[10px] font-bold text-primary mb-1.5 uppercase tracking-widest">
+                  <div className="text-[10px] font-bold text-primary mb-1.5 uppercase tracking-widest truncate">
                     {product.category ? (typeof product.category === 'string' ? product.category : (product.category as any).name) : "Product"}
+                    {product.brand && ` • ${typeof product.brand === 'string' ? product.brand : (product.brand as any).name}`}
                   </div>
                   <h3 className="font-bold text-xl leading-tight line-clamp-2 text-foreground mb-2">{product.name}</h3>
                   <div className="flex items-center gap-1 mb-3 mt-auto">
