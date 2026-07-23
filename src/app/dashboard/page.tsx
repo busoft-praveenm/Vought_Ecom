@@ -3,8 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/card";
 import { Activity, CreditCard, DollarSign, Users } from "lucide-react";
 import { cookies } from "next/headers";
 import { getRandomCategoriesAction } from "@/app/actions/category";
+import { getRandomBrandsAction } from "@/app/actions/brand";
+import { getRandomProductsAction } from "@/app/actions/product";
 import { CategoryMasonry } from "./category-masonry";
-
+import InfiniteMenu from "@/components/InfiniteMenu";
+import Carousel from "@/components/Carousel";
 export const metadata = {
   title: "Dashboard - Vought Ecom",
   description: "Overview of your e-commerce platform.",
@@ -89,18 +92,78 @@ function AdminOverview() {
 }
 
 async function UserLanding() {
-  const categories = await getRandomCategoriesAction(10);
+  const [categories, brands, products] = await Promise.all([
+    getRandomCategoriesAction(20),
+    getRandomBrandsAction(15),
+    getRandomProductsAction(15)
+  ]);
+
+  const brandItems = brands.map((b: any) => ({
+    image: b.imageUrl || 'https://picsum.photos/400/400?grayscale',
+    title: b.name,
+    description: b.description || 'Premium Brand',
+    link: `/dashboard/products?brand=${b.id}`
+  }));
+
+  const productItems = products.map((p: any) => ({
+    id: p.id,
+    title: p.name,
+    description: p.description || 'Amazing product',
+    imageUrl: p.imageUrl || 'https://picsum.photos/300/300?grayscale',
+    link: `/dashboard/products/${p.id}`
+  }));
 
   return (
-    <div className="w-full animate-in fade-in zoom-in-95 duration-700">
-      <div className="text-center mb-10 max-w-6xl mx-auto">
-        <h1 className="text-4xl font-extrabold tracking-tight mb-4">Discover Categories</h1>
-        <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-          Explore our wide range of premium products tailored just for you. Find what you love in our curated collections.
-        </p>
-      </div>
+    <div className="w-full animate-in fade-in zoom-in-95 duration-700 space-y-24 pb-20">
+      
+      {/* Brands Section */}
+      {brandItems.length > 0 && (
+        <section>
+          <div className="text-center mb-10 max-w-6xl mx-auto">
+            <h2 className="text-4xl font-extrabold tracking-tight mb-4">Featured Brands</h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              Discover the top brands that make our collection so special.
+            </p>
+          </div>
+          <div style={{ height: '600px', position: 'relative' }}>
+            <InfiniteMenu items={brandItems} scale={1.2} />
+          </div>
+        </section>
+      )}
 
-      <CategoryMasonry categories={categories} />
+      {/* Categories Section */}
+      <section>
+        <div className="text-center mb-10 max-w-6xl mx-auto">
+          <h2 className="text-4xl font-extrabold tracking-tight mb-4">Discover Categories</h2>
+          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+            Explore our wide range of premium products tailored just for you. Find what you love in our curated collections.
+          </p>
+        </div>
+        <CategoryMasonry categories={categories} />
+      </section>
+
+      {/* Products Section */}
+      {productItems.length > 0 && (
+        <section>
+          <div className="text-center mb-10 max-w-6xl mx-auto">
+            <h2 className="text-4xl font-extrabold tracking-tight mb-4">Trending Products</h2>
+            <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
+              Check out these exciting products that everyone is talking about.
+            </p>
+          </div>
+          <div className="flex justify-center" style={{ height: '700px', position: 'relative' }}>
+            <Carousel
+              items={productItems}
+              baseWidth={1000}
+              autoplay
+              autoplayDelay={3000}
+              pauseOnHover={true}
+              loop={true}
+              round={false}
+            />
+          </div>
+        </section>
+      )}
     </div>
   );
 }

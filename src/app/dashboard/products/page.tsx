@@ -17,6 +17,7 @@ import { Button } from "@/components/button";
 import { Star, ShoppingCart } from "lucide-react";
 import { ProductSearch, ActiveFiltersBreadcrumbs } from "./search-form";
 import { getCategoriesAction } from "@/app/actions/category";
+import { getBrandsAction } from "@/app/actions/brand";
 
 type Product = {
   id: string;
@@ -35,15 +36,17 @@ type Product = {
 export default async function ProductsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string; search?: string; category?: string }>;
+  searchParams: Promise<{ page?: string; search?: string; category?: string; brand?: string }>;
 }) {
   const params = await searchParams;
   const page = Number(params.page) || 1;
   const search = params.search || "";
   const category = params.category || "";
+  const brand = params.brand || "";
 
   let products: Product[] = [];
   let categories: { id: number; name: string }[] = [];
+  let brands: { id: number; name: string }[] = [];
   let totalPages = 1;
   let fetchError = false;
 
@@ -52,15 +55,19 @@ export default async function ProductsPage({
     const cookieStore = await cookies();
     const token = cookieStore.get("access_token")?.value;
 
-    const res = await fetch(`${backendUrl}/products?page=${page}&limit=10&search=${encodeURIComponent(search)}&category=${encodeURIComponent(category)}`, {
+    const res = await fetch(`${backendUrl}/products?page=${page}&limit=10&search=${encodeURIComponent(search)}&category=${encodeURIComponent(category)}&brand=${encodeURIComponent(brand)}`, {
       headers: {
         ...(token ? { "Cookie": `access_token=${token}` } : {}),
       },
       cache: "no-store",
     });
 
-    const catRes = await getCategoriesAction(1, 100);
+    const [catRes, brandRes] = await Promise.all([
+      getCategoriesAction(1, 100),
+      getBrandsAction(1, 100)
+    ]);
     categories = catRes.data || [];
+    brands = brandRes.results || [];
 
     if (!res.ok) {
       console.warn(`Backend returned status ${res.status}.`);
@@ -83,6 +90,7 @@ export default async function ProductsPage({
     if (pageNumber > 1) urlParams.set("page", pageNumber.toString());
     if (search) urlParams.set("search", search);
     if (category) urlParams.set("category", category);
+    if (brand) urlParams.set("brand", brand);
     return `?${urlParams.toString()}`;
   };
 
@@ -95,12 +103,12 @@ export default async function ProductsPage({
         </div>
 
         <Suspense fallback={<div className="h-10 w-full sm:w-[300px] bg-muted animate-pulse rounded-md"></div>}>
-          <ProductSearch categories={categories} />
+          <ProductSearch categories={categories} brands={brands} />
         </Suspense>
       </div>
 
       <Suspense fallback={null}>
-        <ActiveFiltersBreadcrumbs categories={categories} />
+        <ActiveFiltersBreadcrumbs categories={categories} brands={brands} />
       </Suspense>
 
       {fetchError && (

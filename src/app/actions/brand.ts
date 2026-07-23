@@ -21,6 +21,24 @@ export async function getBrandsAction(page: number = 1, limit: number = 50) {
   }
 }
 
+export async function getRandomBrandsAction(limit: number = 6) {
+  try {
+    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_BASE_URL || "http://localhost:3001";
+    const res = await fetch(`${backendUrl}/brands/random?limit=${limit}`, {
+      cache: "no-store",
+    });
+
+    if (!res.ok) {
+      throw new Error("Failed to fetch random brands");
+    }
+
+    return await res.json();
+  } catch (error) {
+    console.error("Error fetching random brands:", error);
+    return [];
+  }
+}
+
 export async function getBrandsAdminAction(page: number = 1, limit: number = 50) {
   try {
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_BASE_URL || "http://localhost:3001";

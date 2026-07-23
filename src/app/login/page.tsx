@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { LoginForm } from "./login-form";
 import { AnimatedLogo } from "@/components/ui/animated-logo";
+import LiquidEther from "@/components/LiquidEther";
 
 export const metadata = {
   title: "Login - Vought Ecom",
@@ -21,14 +22,25 @@ export default function LoginPage() {
             100% { transform: translateY(0); opacity: 1; }
           }
         `}} />
-        <Image
-          src="/login_bg.png"
-          alt="Premium abstract background"
-          fill
-          sizes="(max-width: 1024px) 100vw, 50vw"
-          className="object-cover opacity-90"
-          priority
-        />
+        <div className="absolute inset-0 z-0 opacity-90">
+          <LiquidEther
+            colors={['#5227FF', '#FF9FFC', '#B497CF']}
+            mouseForce={20}
+            cursorSize={100}
+            isViscous={false}
+            viscous={30}
+            iterationsViscous={32}
+            iterationsPoisson={32}
+            resolution={0.5}
+            isBounce={false}
+            autoDemo={true}
+            autoSpeed={0.5}
+            autoIntensity={2.2}
+            takeoverDuration={0.25}
+            autoResumeDelay={3000}
+            autoRampDuration={0.6}
+          />
+        </div>
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
         
         <div className="absolute bottom-16 left-12 z-10 max-w-xl">
@@ -44,14 +56,15 @@ export default function LoginPage() {
         
         {/* Mobile Background and Logo (Hidden on Desktop) */}
         <div className="absolute inset-0 z-0 lg:hidden pointer-events-none">
-          <Image
-            src="/login_bg.png"
-            alt="Mobile background"
-            fill
-            sizes="100vw"
-            className="object-cover opacity-50"
-            priority
-          />
+          <div className="absolute inset-0 z-0 opacity-50">
+            <LiquidEther
+              colors={['#5227FF', '#FF9FFC', '#B497CF']}
+              mouseForce={20}
+              cursorSize={80}
+              resolution={0.25}
+              autoDemo={true}
+            />
+          </div>
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
           
           <div className="absolute top-16 w-full flex justify-center [&_h1]:justify-center">
