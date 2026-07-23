@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Patch, Delete, Body, Injectable, Param, Query, UseGuards, UseInterceptors } from "@nestjs/common";
+import { Controller, Get, Post, Patch, Delete, Body, Injectable, Param, Query, UseGuards, UseInterceptors, Req } from "@nestjs/common";
 import { ProductsService } from "./products.service";
 import { FirebaseAuthGuard } from "@/guards/firebase.auth.guard";
 import { RolesGuard } from "@/guards/roles.guard";
@@ -21,9 +21,11 @@ export class ProductsController {
     @Query('page') page = '1',
     @Query('limit') limit = '10',
     @Query('search') search = '',
-    @Query('category') category = ''
+    @Query('category') category = '',
+    @Req() req: any
   ){
-    return this.productsService.getProducts(Number(page),Number(limit),search, category);
+    const isAdmin = req.dbUser?.role?.name === 'admin';
+    return this.productsService.getProducts(Number(page),Number(limit),search, category, isAdmin);
   }
 
   @UseGuards(FirebaseAuthGuard)

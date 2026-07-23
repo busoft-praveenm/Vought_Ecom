@@ -1,8 +1,8 @@
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, ManyToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { ProductsDb } from "./tbl_products.entity";
 
-@Entity('tbl_category')
-export class CategoryDb {
+@Entity('tbl_brand')
+export class BrandDb {
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -18,7 +18,7 @@ export class CategoryDb {
   @Column({ type: 'boolean', default: true })
   isActive: boolean;
 
-  @ManyToMany(() => ProductsDb, product => product.categories)
+  @OneToMany(() => ProductsDb, product => product.brand)
   products: ProductsDb[];
 
   @CreateDateColumn()

@@ -1,6 +1,7 @@
-import { Column, CreateDateColumn, DeleteDateColumn, Entity, ManyToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, DeleteDateColumn, Entity, ManyToOne, ManyToMany, JoinTable, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { UserDb } from "./tbl_user.entity";
 import { CategoryDb } from "./tbl_category.entity";
+import { BrandDb } from "./tbl_brand.entity";
 
 export enum ProductStatus {
   ACTIVE = 'active',
@@ -31,11 +32,16 @@ export class ProductsDb {
   @Column({ default: 0 })
   stock: number;
 
-  @ManyToOne(() => CategoryDb, category => category.products, { nullable: true })
-  category: CategoryDb;
+  @ManyToMany(() => CategoryDb, category => category.products, { nullable: true })
+  @JoinTable({
+    name: 'product_categories',
+    joinColumn: { name: 'product_id', referencedColumnName: 'id' },
+    inverseJoinColumn: { name: 'category_id', referencedColumnName: 'id' }
+  })
+  categories: CategoryDb[];
 
-  @Column({ nullable: true })
-  brand: string;
+  @ManyToOne(() => BrandDb, brand => brand.products, { nullable: true })
+  brand: BrandDb;
 
   @Column({ nullable: true, type: 'text'})
   imageUrl: string;

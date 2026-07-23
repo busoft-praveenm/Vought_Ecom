@@ -1,4 +1,4 @@
-import mysql from 'mysql2/promise';
+const mysql = require('mysql2/promise');
 
 async function seedProducts() {
   const connection = await mysql.createConnection({
@@ -19,10 +19,10 @@ async function seedProducts() {
   await connection.execute('DELETE FROM tbl_category');
 
   console.log('Seeding brands...');
-  const brandIds: number[] = [];
+  const brandIds = [];
   const brandNames = ['Vought International', 'Starlight Tech', 'Seven Home', 'A-Train Sports', 'Deep Aqua'];
   for (const name of brandNames) {
-    const [result]: any = await connection.execute(
+    const [result] = await connection.execute(
       `INSERT INTO tbl_brand (name, description, image_url, is_active, created_at, updated_at) VALUES (?, ?, ?, 1, NOW(), NOW())`,
       [name, `Premium products from ${name}`, brandImage]
     );
@@ -30,10 +30,10 @@ async function seedProducts() {
   }
 
   console.log('Seeding categories...');
-  const catIds: number[] = [];
+  const catIds = [];
   const catNames = ['Electronics', 'Home & Kitchen', 'Sports', 'Toys', 'Fashion'];
   for (const name of catNames) {
-    const [result]: any = await connection.execute(
+    const [result] = await connection.execute(
       `INSERT INTO tbl_category (name, description, image_url, is_active, created_at, updated_at) VALUES (?, ?, ?, 1, NOW(), NOW())`,
       [name, `Awesome ${name}`, catImage]
     );
@@ -50,7 +50,7 @@ async function seedProducts() {
     const productUid = `uid-${Date.now()}-${i}`;
     const brandId = brandIds[i % brandIds.length];
 
-    const [result]: any = await connection.execute(
+    const [result] = await connection.execute(
       `INSERT INTO tbl_products (name, description, price, stock, sku, product_uid, image_url, brand_id, is_deleted, created_at, updated_at)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, NOW(), NOW())`,
       [name, description, price, stock, sku, productUid, productImage, brandId]

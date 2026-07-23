@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, UseGuards, Query } from "@nestjs/common";
+import { Controller, Get, Post, Patch, Delete, Body, Param, UseGuards, Query } from "@nestjs/common";
 import { CategoryDbService } from "@/common/db-services/category-db.service";
 import { FirebaseAuthGuard } from "@/guards/firebase.auth.guard";
 import { RolesGuard } from "@/guards/roles.guard";
@@ -23,8 +23,32 @@ export class CategoriesController {
 
   @UseGuards(FirebaseAuthGuard, RolesGuard)
   @Roles('admin')
+  @Get('admin')
+  async getCategoriesAdmin(
+    @Query('page') page = '1',
+    @Query('limit') limit = '50'
+  ) {
+    return this.categoryDbService.findAll(Number(page), Number(limit), true);
+  }
+
+  @UseGuards(FirebaseAuthGuard, RolesGuard)
+  @Roles('admin')
   @Post()
   async createCategory(@Body() body: { name: string; description?: string; imageUrl?: string }) {
     return this.categoryDbService.createCategory(body.name, body.description, body.imageUrl);
+  }
+
+  @UseGuards(FirebaseAuthGuard, RolesGuard)
+  @Roles('admin')
+  @Patch(':id')
+  async updateCategory(@Param('id') id: string, @Body() body: any) {
+    return this.categoryDbService.updateCategory(Number(id), body);
+  }
+
+  @UseGuards(FirebaseAuthGuard, RolesGuard)
+  @Roles('admin')
+  @Delete(':id')
+  async deleteCategory(@Param('id') id: string) {
+    return this.categoryDbService.deleteCategory(Number(id));
   }
 }

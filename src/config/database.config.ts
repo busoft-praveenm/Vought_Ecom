@@ -6,6 +6,7 @@ import { CartDb } from "@/common/entities/tbl_cart.entity";
 import { CartItemDb } from "@/common/entities/tbl_cart_items.entity";
 import { RoleDb } from "@/common/entities/tbl_role.entity";
 import { CategoryDb } from "@/common/entities/tbl_category.entity";
+import { BrandDb } from "@/common/entities/tbl_brand.entity";
 import { registerAs } from "@nestjs/config";
 import { TypeOrmModuleOptions } from "@nestjs/typeorm";
 import { SnakeNamingStrategy } from "typeorm-naming-strategies";
@@ -20,7 +21,7 @@ export const databaseConfig = registerAs(
     username: process.env.MY_SQL_DB_USER,
     password: process.env.MY_SQL_DB_PASS,
     database: process.env.MY_SQL_DB_NAME,
-    entities: [UserDb, UserProfileDb, ProductsDb, ProductReviewDb, CartDb, CartItemDb, RoleDb, CategoryDb],
+    entities: [UserDb, UserProfileDb, ProductsDb, ProductReviewDb, CartDb, CartItemDb, RoleDb, CategoryDb, BrandDb],
     synchronize: false,
     namingStrategy: new SnakeNamingStrategy(),
   })

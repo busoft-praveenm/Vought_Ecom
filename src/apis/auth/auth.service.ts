@@ -98,7 +98,11 @@ export class AuthService {
       const user = await this.userDbService.updateUserProfile(userId, {
         firstName: data.firstName,
         lastName: data.lastName,
-        mobileNumber: data.mobileNumber
+        mobileNumber: data.mobileNumber,
+        billingAddress: data.billingAddress,
+        deliveryAddress: data.deliveryAddress,
+        deliveryLat: data.deliveryLat,
+        deliveryLng: data.deliveryLng
       });
       return {
         success: true,

@@ -16,7 +16,8 @@ export class ProductsDbService {
   async findById(id: number):Promise<ProductsDb>{
     const product = await this.productRepo
       .createQueryBuilder('product')
-      .leftJoinAndSelect('product.category', 'category')
+      .leftJoinAndSelect('product.categories', 'category')
+      .leftJoinAndSelect('product.brand', 'brand')
       .where('product.id = :id', {id})
       .getOne()
 
@@ -40,10 +41,15 @@ export class ProductsDbService {
     return product;
   }
 
-  async getProducts(page=1, limit=10, search='', categoryId=''){
+  async getProducts(page=1, limit=10, search='', categoryId='', isAdmin=false){
     const queryBuilder = this.productRepo.createQueryBuilder('product')
-      .leftJoinAndSelect('product.category', 'category');
+      .leftJoinAndSelect('product.categories', 'category')
+      .leftJoinAndSelect('product.brand', 'brand');
     queryBuilder.where('product.isDeleted = :isDeleted', { isDeleted: false });
+
+    if (!isAdmin) {
+      queryBuilder.andWhere('(brand.id IS NULL OR brand.isActive = :brandIsActive)', { brandIsActive: true });
+    }
 
     if(search){
       queryBuilder.andWhere(
@@ -55,7 +61,7 @@ export class ProductsDbService {
             category.name
               LIKE :search
             OR
-            product.brand
+            brand.name
               LIKE :search
           )
         `,
@@ -68,7 +74,7 @@ export class ProductsDbService {
     if(categoryId){
       const ids = categoryId.split(',').map(id => Number(id.trim())).filter(id => !isNaN(id));
       if (ids.length > 0) {
-        queryBuilder.andWhere('category.id IN (:...ids)', { ids });
+        queryBuilder.innerJoin('product.categories', 'filterCategory', 'filterCategory.id IN (:...ids)', { ids });
       }
     }
 
@@ -101,7 +107,8 @@ export class ProductsDbService {
   async getProductWithReviews(id: number) {
     const product = await this.productRepo
       .createQueryBuilder('product')
-      .leftJoinAndSelect('product.category', 'category')
+      .leftJoinAndSelect('product.categories', 'category')
+      .leftJoinAndSelect('product.brand', 'brand')
       .where('product.id = :id', { id })
       .andWhere('product.isDeleted = :isDeleted', { isDeleted: false })
       .getOne();
@@ -121,37 +128,42 @@ export class ProductsDbService {
     return { product, reviews };
   }
 
-  async createProduct(data: Partial<ProductsDb> & { categoryId?: number }): Promise<ProductsDb> {
+  async createProduct(data: Partial<ProductsDb> & { categoryIds?: number[]; brandId?: number }): Promise<ProductsDb> {
     const sku = data.sku || `SKU-${Date.now()}`;
     const productUid = data.product_uid || uuidv4();
     
-    const { categoryId, ...productData } = data;
+    const { categoryIds, brandId, ...productData } = data as any;
     
     const newProduct = this.productRepo.create({
       ...productData,
       sku,
       product_uid: productUid,
-      category: categoryId ? { id: categoryId } as any : undefined,
+      categories: categoryIds ? categoryIds.map((id: number) => ({ id })) : [],
+      brand: brandId ? { id: brandId } as any : undefined,
     });
     
-    const saved = await this.productRepo.save(newProduct);
+    const saved = await this.productRepo.save(newProduct) as any;
     return this.findById(saved.id);
   }
 
-  async updateProduct(id: number, data: Partial<ProductsDb> & { categoryId?: number }): Promise<ProductsDb> {
-    const { categoryId, ...productData } = data;
+  async updateProduct(id: number, data: Partial<ProductsDb> & { categoryIds?: number[]; brandId?: number }): Promise<ProductsDb> {
+    const { categoryIds, brandId, ...productData } = data as any;
     
-    const updatePayload: any = { ...productData };
-    if (categoryId !== undefined) {
-      updatePayload.category = { id: categoryId };
+    // For many-to-many, we must load the product and save it to update relations,
+    // or use a relational query builder. save() is safer here.
+    const product = await this.productRepo.findOne({ where: { id }, relations: ['categories'] });
+    if (!product) throw new NotFoundException('Product not found');
+
+    Object.assign(product, productData);
+
+    if (categoryIds !== undefined) {
+      product.categories = categoryIds.map((cid: number) => ({ id: cid })) as any;
+    }
+    if (brandId !== undefined) {
+      product.brand = { id: brandId } as any;
     }
 
-    await this.productRepo
-      .createQueryBuilder()
-      .update(ProductsDb)
-      .set(updatePayload)
-      .where('id = :id', { id })
-      .execute();
+    await this.productRepo.save(product);
       
     return this.findById(id);
   }

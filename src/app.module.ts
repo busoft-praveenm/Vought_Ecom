@@ -13,6 +13,7 @@ import { redisStore } from 'cache-manager-redis-yet';
 import { CartModule } from './apis/cart/cart.module';
 import { UsersModule } from './apis/users/users.module';
 import { CategoriesModule } from './apis/categories/categories.module';
+import { BrandsModule } from './apis/brands/brands.module';
 
 @Module({
   imports: [
@@ -46,7 +47,8 @@ import { CategoriesModule } from './apis/categories/categories.module';
     ReviewsModule,
     CartModule,
     UsersModule,
-    CategoriesModule
+    CategoriesModule,
+    BrandsModule
   ],
   controllers: [AppController],
   providers: [AppService],
