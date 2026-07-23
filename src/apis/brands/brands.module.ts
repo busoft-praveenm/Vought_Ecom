@@ -8,9 +8,14 @@ import { UserDb } from '@/common/entities/tbl_user.entity';
 import { UserProfileDb } from '@/common/entities/tbl_user_profile.entity';
 import { RoleDb } from '@/common/entities/tbl_role.entity';
 
+import { BullModule } from '@nestjs/bullmq';
+
 @Module({
   imports: [
-    TypeOrmModule.forFeature([BrandDb, UserDb, UserProfileDb, RoleDb])
+    TypeOrmModule.forFeature([BrandDb, UserDb, UserProfileDb, RoleDb]),
+    BullModule.registerQueue({
+      name: 'cascade-deletion',
+    }),
   ],
   controllers: [BrandsController],
   providers: [BrandDbService, UserDbService]

@@ -4,8 +4,15 @@ import { DbServicesModule } from "@/common/db-services/db-services.module";
 import { ProductsService } from "./products.service";
 
 
+import { BullModule } from '@nestjs/bullmq';
+
 @Module({
-  imports: [DbServicesModule],
+  imports: [
+    DbServicesModule,
+    BullModule.registerQueue({
+      name: 'cache-invalidation',
+    }),
+  ],
   controllers: [ProductsController],
   providers: [ProductsService],
   exports: []

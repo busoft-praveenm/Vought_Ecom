@@ -11,24 +11,35 @@ import { ReviewsDbService } from "./reviews-db.service";
 import { CartDb } from "../entities/tbl_cart.entity";
 import { CartItemDb } from "../entities/tbl_cart_items.entity";
 import { CartDbService } from "./cart-db.service";
+import { BrandDb } from "../entities/tbl_brand.entity";
+import { CategoryDb } from "../entities/tbl_category.entity";
+import { CategoryDbService } from './category-db.service';
+import { BullModule } from '@nestjs/bullmq';
 
 @Module({
-  imports:[
+  imports: [
     TypeOrmModule.forFeature([
       UserDb,
       UserProfileDb,
+      RoleDb,
       ProductsDb,
-      ProductReviewDb,
+      BrandDb,
+      CategoryDb,
       CartDb,
       CartItemDb,
-      RoleDb
-    ])
+      ProductReviewDb
+    ]),
+    BullModule.registerQueue(
+      { name: 'cascade-deletion' },
+      { name: 'review-aggregation' }
+    )
   ],
   providers: [
     UserDbService, 
     ProductsDbService, 
     ReviewsDbService,
-    CartDbService
+    CartDbService,
+    CategoryDbService
   ],
   exports: [
     TypeOrmModule,

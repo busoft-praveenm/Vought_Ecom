@@ -14,6 +14,8 @@ import { CartModule } from './apis/cart/cart.module';
 import { UsersModule } from './apis/users/users.module';
 import { CategoriesModule } from './apis/categories/categories.module';
 import { BrandsModule } from './apis/brands/brands.module';
+import { BullModule } from '@nestjs/bullmq';
+import { JobsModule } from './jobs/jobs.module';
 
 @Module({
   imports: [
@@ -41,6 +43,16 @@ import { BrandsModule } from './apis/brands/brands.module';
         }),
       }),
     }),
+    BullModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        connection: {
+          host: configService.get<string>('REDIS_HOST', 'localhost'),
+          port: configService.get<number>('REDIS_PORT', 6379),
+        },
+      }),
+    }),
     DbServicesModule,
     AuthModule,
     ProductsModule,
@@ -48,7 +60,8 @@ import { BrandsModule } from './apis/brands/brands.module';
     CartModule,
     UsersModule,
     CategoriesModule,
-    BrandsModule
+    BrandsModule,
+    JobsModule
   ],
   controllers: [AppController],
   providers: [AppService],

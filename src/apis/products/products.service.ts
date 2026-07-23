@@ -1,14 +1,14 @@
 import { ProductsDbService } from "@/common/db-services/products-db.service";
 import { Injectable, Inject } from "@nestjs/common";
-import { CACHE_MANAGER } from "@nestjs/cache-manager";
-import type { Cache } from "cache-manager";
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
 
 @Injectable()
 export class ProductsService {
 
   constructor(
     private readonly productsDbService: ProductsDbService,
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+    @InjectQueue('cache-invalidation') private cacheQueue: Queue,
   ){}
 
   async getProducts(page = 1, limit = 10, search = '', category = '', brand = '', isAdmin = false) {
@@ -35,10 +35,10 @@ export class ProductsService {
     
     // Clear only the cache for the specific page where the product is present
     const cacheKey = `/products?page=${page}&limit=10&search=`;
-    await this.cacheManager.del(cacheKey);
     
-    // Also clear the individual product cache if it exists
-    await this.cacheManager.del(`/products/${id}`);
+    await this.cacheQueue.add('clear-specific-keys', { 
+      keys: [cacheKey, `/products/${id}`] 
+    });
     
     return product;
   }
@@ -49,22 +49,6 @@ export class ProductsService {
   }
 
   private async clearAllProductsCache() {
-    // Attempt to clear all cache keys starting with /products
-    try {
-      const cacheAny = this.cacheManager as any;
-      const store = cacheAny.store || (cacheAny.stores && cacheAny.stores[0]);
-      
-      if (store && store.keys) {
-        const keys = await store.keys('/products*');
-        for (const key of keys) {
-          await this.cacheManager.del(key);
-        }
-      } else {
-        // Fallback if keys is not supported by the store
-        await this.cacheManager.clear();
-      }
-    } catch (error) {
-      await this.cacheManager.clear();
-    }
+    await this.cacheQueue.add('clear-all-products', {});
   }
 }

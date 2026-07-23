@@ -2,12 +2,15 @@ import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { BrandDb } from "../entities/tbl_brand.entity";
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
 
 @Injectable()
 export class BrandDbService {
   constructor(
     @InjectRepository(BrandDb)
-    private readonly brandRepo: Repository<BrandDb>
+    private readonly brandRepo: Repository<BrandDb>,
+    @InjectQueue('cascade-deletion') private cascadeQueue: Queue
   ) {}
 
   async findAll(page = 1, limit = 10, isAdmin = false) {
@@ -61,12 +64,10 @@ export class BrandDbService {
   async deleteBrand(id: number): Promise<void> {
     await this.brandRepo.softDelete(id);
     
-    // Cascade soft delete to products
-    await this.brandRepo.manager
-      .createQueryBuilder()
-      .update('tbl_products')
-      .set({ isDeleted: true })
-      .where('brand_id = :id', { id })
-      .execute();
+    // Dispatch job to cascade soft delete to products
+    await this.cascadeQueue.add('delete-products', { 
+      entityType: 'brand', 
+      entityId: id 
+    });
   }
 }

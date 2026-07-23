@@ -4,6 +4,8 @@ import { Repository } from "typeorm";
 import { ProductReviewDb } from "../entities/tbl_product_review.entity";
 import { ProductsDb } from "../entities/tbl_products.entity";
 import { UserDb } from "../entities/tbl_user.entity";
+import { InjectQueue } from '@nestjs/bullmq';
+import { Queue } from 'bullmq';
 
 @Injectable()
 export class ReviewsDbService {
@@ -14,7 +16,8 @@ export class ReviewsDbService {
     @InjectRepository(ProductsDb)
     private readonly productRepo: Repository<ProductsDb>,
     @InjectRepository(UserDb)
-    private readonly userRepo: Repository<UserDb>
+    private readonly userRepo: Repository<UserDb>,
+    @InjectQueue('review-aggregation') private reviewQueue: Queue
   ){}
 
   async createReview(productId: number, userUid: string, rating: number, reviewText?: string): Promise<ProductReviewDb> {
@@ -48,18 +51,10 @@ export class ReviewsDbService {
 
     await this.reviewRepo.save(review);
 
-    // Calculate new average
-    const result = await this.reviewRepo
-      .createQueryBuilder('review')
-      .select('AVG(review.rating)', 'average')
-      .where('review.product = :productId', { productId })
-      .getRawOne();
-      
-    const newAverage = result && result.average ? parseFloat(result.average) : 0;
-    
-    // Update product
-    product.averageRating = newAverage;
-    await this.productRepo.save(product);
+    // Dispatch job to calculate new average
+    await this.reviewQueue.add('aggregate-rating', { 
+      productId 
+    });
 
     return review;
   }
