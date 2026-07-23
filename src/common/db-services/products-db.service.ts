@@ -41,7 +41,19 @@ export class ProductsDbService {
     return product;
   }
 
-  async getProducts(page=1, limit=10, search='', categoryId='', isAdmin=false){
+  async getRandomProducts(limit: number = 5): Promise<ProductsDb[]> {
+    return this.productRepo
+      .createQueryBuilder('product')
+      .leftJoinAndSelect('product.brand', 'brand')
+      .leftJoinAndSelect('product.categories', 'category')
+      .where('product.isDeleted = :isDeleted', { isDeleted: false })
+      .andWhere('(brand.id IS NULL OR brand.isActive = :brandIsActive)', { brandIsActive: true })
+      .orderBy('RAND()')
+      .take(limit)
+      .getMany();
+  }
+
+  async getProducts(page=1, limit=10, search='', categoryId='', brandId='', isAdmin=false){
     const queryBuilder = this.productRepo.createQueryBuilder('product')
       .leftJoinAndSelect('product.categories', 'category')
       .leftJoinAndSelect('product.brand', 'brand');
@@ -75,6 +87,13 @@ export class ProductsDbService {
       const ids = categoryId.split(',').map(id => Number(id.trim())).filter(id => !isNaN(id));
       if (ids.length > 0) {
         queryBuilder.innerJoin('product.categories', 'filterCategory', 'filterCategory.id IN (:...ids)', { ids });
+      }
+    }
+
+    if(brandId){
+      const bIds = brandId.split(',').map(id => Number(id.trim())).filter(id => !isNaN(id));
+      if (bIds.length > 0) {
+        queryBuilder.andWhere('brand.id IN (:...bIds)', { bIds });
       }
     }
 

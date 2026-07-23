@@ -22,10 +22,20 @@ export class ProductsController {
     @Query('limit') limit = '10',
     @Query('search') search = '',
     @Query('category') category = '',
+    @Query('brand') brand = '',
     @Req() req: any
   ){
     const isAdmin = req.dbUser?.role?.name === 'admin';
-    return this.productsService.getProducts(Number(page),Number(limit),search, category, isAdmin);
+    return this.productsService.getProducts(Number(page),Number(limit),search, category, brand, isAdmin);
+  }
+
+  @Get('random')
+  async getRandomProducts(@Query('limit') limit = '5') {
+    // Note: We bypass ProductsService here for simplicity, 
+    // since the other random methods access DbService directly or we can add it to ProductsService
+    // Let's add it to ProductsService instead. Wait, ProductsController uses ProductsService, not ProductsDbService.
+    // I need to check ProductsService if I should add it there.
+    return this.productsService.getRandomProducts(Number(limit));
   }
 
   @UseGuards(FirebaseAuthGuard)

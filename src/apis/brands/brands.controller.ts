@@ -16,6 +16,11 @@ export class BrandsController {
     return this.brandDbService.findAll(Number(page), Number(limit));
   }
 
+  @Get('random')
+  async getRandomBrands(@Query('limit') limit = '6') {
+    return this.brandDbService.getRandomBrands(Number(limit));
+  }
+
   @UseGuards(FirebaseAuthGuard, RolesGuard)
   @Roles('admin')
   @Get('admin')

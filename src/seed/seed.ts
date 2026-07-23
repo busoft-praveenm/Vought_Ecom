@@ -20,7 +20,11 @@ async function seedProducts() {
 
   console.log('Seeding brands...');
   const brandIds: number[] = [];
-  const brandNames = ['Vought International', 'Starlight Tech', 'Seven Home', 'A-Train Sports', 'Deep Aqua'];
+  const brandNames = [
+    'Vought International', 'Starlight Tech', 'Seven Home', 'A-Train Sports', 'Deep Aqua',
+    'Maeve Beauty', 'Noir Stealth', 'Homelander Capes', 'Translucent Glass', 'Queen Maeve Fitness',
+    'Stormfront Tech', 'Black Noir Knives', 'Lamplighter Torches', 'Eagle the Archer Bows', 'Ashley PR'
+  ];
   for (const name of brandNames) {
     const [result]: any = await connection.execute(
       `INSERT INTO tbl_brand (name, description, image_url, is_active, created_at, updated_at) VALUES (?, ?, ?, 1, NOW(), NOW())`,
@@ -31,7 +35,12 @@ async function seedProducts() {
 
   console.log('Seeding categories...');
   const catIds: number[] = [];
-  const catNames = ['Electronics', 'Home & Kitchen', 'Sports', 'Toys', 'Fashion'];
+  const catNames = [
+    'Electronics', 'Home & Kitchen', 'Sports', 'Toys', 'Fashion',
+    'Books', 'Automotive', 'Beauty', 'Health', 'Pet Supplies',
+    'Garden', 'Outdoors', 'Groceries', 'Baby', 'Tools',
+    'Office Supplies', 'Musical Instruments', 'Software', 'Industrial', 'Handmade'
+  ];
   for (const name of catNames) {
     const [result]: any = await connection.execute(
       `INSERT INTO tbl_category (name, description, image_url, is_active, created_at, updated_at) VALUES (?, ?, ?, 1, NOW(), NOW())`,

@@ -39,6 +39,15 @@ export class BrandDbService {
     return brand;
   }
 
+  async getRandomBrands(limit: number = 6): Promise<BrandDb[]> {
+    return this.brandRepo
+      .createQueryBuilder('brand')
+      .where('brand.isActive = :isActive', { isActive: true })
+      .orderBy('RAND()')
+      .take(limit)
+      .getMany();
+  }
+
   async createBrand(name: string, description?: string, imageUrl?: string): Promise<BrandDb> {
     const newBrand = this.brandRepo.create({ name, description, imageUrl });
     return this.brandRepo.save(newBrand);
