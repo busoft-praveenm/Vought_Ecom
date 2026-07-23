@@ -5,12 +5,14 @@ import { Button } from "@/components/button";
 import { Input } from "@/components/input";
 import { Label } from "@/components/label";
 import { toast } from "sonner";
-import { createBrandAction } from "@/app/actions/brand";
+import { useRouter } from "next/navigation";
+import { createBrandAction, updateBrandAction } from "@/app/actions/brand";
 
-export function BrandForm() {
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
+export function BrandForm({ initialData }: { initialData?: any }) {
+  const router = useRouter();
+  const [name, setName] = useState(initialData?.name || "");
+  const [description, setDescription] = useState(initialData?.description || "");
+  const [imageUrl, setImageUrl] = useState(initialData?.imageUrl || "");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -19,24 +21,33 @@ export function BrandForm() {
     
     setIsLoading(true);
     try {
-      const result = await createBrandAction({ name, description, imageUrl });
-      if (!result.success) {
-        throw new Error(result.error);
+      if (initialData) {
+        const result = await updateBrandAction(initialData.id, { name, description, imageUrl });
+        if (!result.success) throw new Error(result.error);
+        toast.success("Brand updated successfully");
+        router.push("/dashboard/admin/brands"); // remove edit query param
+      } else {
+        const result = await createBrandAction({ name, description, imageUrl });
+        if (!result.success) throw new Error(result.error);
+        toast.success("Brand created successfully");
+        setName("");
+        setDescription("");
+        setImageUrl("");
       }
-      toast.success("Brand created successfully");
-      setName("");
-      setDescription("");
-      setImageUrl("");
     } catch (error: any) {
-      toast.error(error.message || "Failed to create brand");
+      toast.error(error.message || "Failed to save brand");
     } finally {
       setIsLoading(false);
     }
   };
 
+  const handleCancel = () => {
+    router.push("/dashboard/admin/brands");
+  };
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4 p-4 border rounded-md bg-card">
-      <h3 className="text-lg font-medium">Create New Brand</h3>
+      <h3 className="text-lg font-medium">{initialData ? "Edit Brand" : "Create New Brand"}</h3>
       <div className="space-y-2">
         <Label htmlFor="name">Brand Name</Label>
         <Input 
@@ -68,9 +79,16 @@ export function BrandForm() {
           disabled={isLoading}
         />
       </div>
-      <Button type="submit" disabled={isLoading || !name.trim()}>
-        {isLoading ? "Creating..." : "Create Brand"}
-      </Button>
+      <div className="flex space-x-2">
+        <Button type="submit" disabled={isLoading || !name.trim()}>
+          {isLoading ? "Saving..." : (initialData ? "Update Brand" : "Create Brand")}
+        </Button>
+        {initialData && (
+          <Button type="button" variant="outline" onClick={handleCancel} disabled={isLoading}>
+            Cancel
+          </Button>
+        )}
+      </div>
     </form>
   );
 }

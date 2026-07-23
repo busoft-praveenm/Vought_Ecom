@@ -11,7 +11,7 @@ type ProductDetails = {
     name: string;
     price: number;
     stock: number;
-    category: string | any;
+    categories: any[];
     brand: string | any;
     status: string;
     imageUrl?: string;
@@ -97,7 +97,7 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
         <div className="flex flex-col">
           <div className="mb-2">
             <span className="text-xs uppercase tracking-widest text-primary font-semibold">
-              {typeof product.category === 'string' ? product.category : (product.category as any)?.name || '-'}
+              {product.categories?.length > 0 ? product.categories.map((c: any) => c.name).join(', ') : '-'}
               {product.brand && ` • ${typeof product.brand === 'string' ? product.brand : (product.brand as any)?.name || ''}`}
             </span>
           </div>

@@ -1,6 +1,7 @@
 import React from "react";
-import { getBrandsAction } from "@/app/actions/brand";
+import { getBrandsAdminAction } from "@/app/actions/brand";
 import { BrandForm } from "./brand-form";
+import { BrandActions, BrandStatusToggle } from "./brand-actions";
 import {
   Table,
   TableBody,
@@ -23,13 +24,15 @@ import { generatePagination } from "@/lib/pagination";
 export default async function AdminBrandsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<{ page?: string; edit?: string }>;
 }) {
   const params = await searchParams;
   const page = Number(params.page) || 1;
+  const editId = params.edit;
   const limit = 10;
 
-  const { results: brands = [], pagination: { totalPages = 1 } = {} } = await getBrandsAction(page, limit);
+  const { results: brands = [], pagination: { totalPages = 1 } = {} } = await getBrandsAdminAction(page, limit);
+  const editBrand = editId ? brands.find((b: any) => b.id === Number(editId)) : null;
 
   const createPageUrl = (pageNumber: number) => {
     return `?page=${pageNumber}`;
@@ -44,7 +47,7 @@ export default async function AdminBrandsPage({
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-1">
-          <BrandForm />
+          <BrandForm initialData={editBrand} key={editBrand?.id || 'new'} />
         </div>
 
         <div className="md:col-span-2 rounded-md border border-border bg-card overflow-hidden">
@@ -54,6 +57,7 @@ export default async function AdminBrandsPage({
                 <TableHead>Name</TableHead>
                 <TableHead>Description</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -69,12 +73,10 @@ export default async function AdminBrandsPage({
                     <TableCell className="font-medium">{brand.name}</TableCell>
                     <TableCell>{brand.description || "-"}</TableCell>
                     <TableCell>
-                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${brand.isActive
-                        ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
-                        : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
-                        }`}>
-                        {brand.isActive ? "Active" : "Inactive"}
-                      </span>
+                      <BrandStatusToggle brand={brand} />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <BrandActions brand={brand} />
                     </TableCell>
                   </TableRow>
                 ))

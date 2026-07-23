@@ -8,13 +8,25 @@ import { Label } from "@/components/label";
 import { toast } from "sonner";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/card";
 import { saveProductAction } from "./actions";
+import { ChevronDown } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuCheckboxItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+} from "@/components/dropdown-menu";
 
 type ProductData = {
   name: string;
   sku: string;
   price: string;
   stock: string;
-  category: string;
+  categories: string[];
   brand: string;
   imageUrl: string;
   description: string;
@@ -23,7 +35,8 @@ type ProductData = {
 export function ProductForm({ 
   initialData, 
   productId,
-  categories = []
+  categories = [],
+  brands = []
 }: { 
   initialData?: ProductData, 
   productId?: string,
@@ -37,7 +50,7 @@ export function ProductForm({
     sku: "",
     price: "",
     stock: "",
-    category: "",
+    categories: [],
     brand: "",
     imageUrl: "",
     description: "",
@@ -50,6 +63,16 @@ export function ProductForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (formData.categories.length === 0) {
+      toast.error("Please select at least one category");
+      return;
+    }
+    if (!formData.brand) {
+      toast.error("Please select a brand");
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -57,7 +80,7 @@ export function ProductForm({
         ...formData,
         price: parseFloat(formData.price),
         stock: parseInt(formData.stock, 10),
-        categoryId: formData.category ? parseInt(formData.category, 10) : undefined,
+        categoryIds: formData.categories.map(c => parseInt(c, 10)),
         brandId: formData.brand ? parseInt(formData.brand, 10) : undefined,
       };
 
@@ -142,36 +165,66 @@ export function ProductForm({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="category">Category</Label>
-              <select
-                id="category"
-                name="category"
-                value={formData.category}
-                onChange={handleChange as any}
-                required
-                className="flex h-10 w-full rounded-md border border-input bg-background/50 px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <option value="" disabled>Select a category</option>
-                {categories.map(cat => (
-                  <option key={cat.id} value={cat.id.toString()}>{cat.name}</option>
-                ))}
-              </select>
+              <Label htmlFor="category">Categories <span className="text-red-500">*</span></Label>
+              <DropdownMenu>
+                <DropdownMenuTrigger className="flex h-10 w-full items-center justify-between px-3 py-2 text-sm bg-background/50 border border-input rounded-md hover:bg-accent hover:text-accent-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer">
+                  <span className="flex items-center gap-2 truncate">
+                    {formData.categories.length > 0 ? `${formData.categories.length} selected` : "Select categories"}
+                  </span>
+                  <ChevronDown className="h-4 w-4 opacity-50 shrink-0" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-[--anchor-width] min-w-[200px]">
+                  <DropdownMenuGroup>
+                    <DropdownMenuLabel>Categories</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {categories.map((cat) => (
+                      <DropdownMenuCheckboxItem
+                        key={cat.id}
+                        checked={formData.categories.includes(cat.id.toString())}
+                        onCheckedChange={(checked) => {
+                          setFormData(prev => {
+                            const newCats = checked 
+                              ? [...prev.categories, cat.id.toString()]
+                              : prev.categories.filter(id => id !== cat.id.toString());
+                            return { ...prev, categories: newCats };
+                          });
+                        }}
+                        className="cursor-pointer"
+                      >
+                        {cat.name}
+                      </DropdownMenuCheckboxItem>
+                    ))}
+                    {categories.length === 0 && (
+                      <div className="p-2 text-sm text-muted-foreground">No categories found</div>
+                    )}
+                  </DropdownMenuGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="brand">Brand</Label>
-              <select
-                id="brand"
-                name="brand"
-                value={formData.brand}
-                onChange={handleChange as any}
-                required
-                className="flex h-10 w-full rounded-md border border-input bg-background/50 px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <option value="" disabled>Select a brand</option>
-                {brands?.map(brand => (
-                  <option key={brand.id} value={brand.id.toString()}>{brand.name}</option>
-                ))}
-              </select>
+              <Label htmlFor="brand">Brand <span className="text-red-500">*</span></Label>
+              <DropdownMenu>
+                <DropdownMenuTrigger className="flex h-10 w-full items-center justify-between px-3 py-2 text-sm bg-background/50 border border-input rounded-md hover:bg-accent hover:text-accent-foreground transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 cursor-pointer">
+                  <span className="flex items-center gap-2 truncate">
+                    {formData.brand ? brands.find(b => b.id.toString() === formData.brand)?.name || "Select a brand" : "Select a brand"}
+                  </span>
+                  <ChevronDown className="h-4 w-4 opacity-50 shrink-0" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-[--anchor-width] min-w-[200px]">
+                  <DropdownMenuRadioGroup value={formData.brand} onValueChange={(val) => setFormData(prev => ({ ...prev, brand: val }))}>
+                    <DropdownMenuLabel>Brands</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    {brands.map(brand => (
+                      <DropdownMenuRadioItem key={brand.id} value={brand.id.toString()} className="cursor-pointer">
+                        {brand.name}
+                      </DropdownMenuRadioItem>
+                    ))}
+                    {brands.length === 0 && (
+                      <div className="p-2 text-sm text-muted-foreground">No brands found</div>
+                    )}
+                  </DropdownMenuRadioGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
 

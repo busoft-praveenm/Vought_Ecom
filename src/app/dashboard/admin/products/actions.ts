@@ -38,3 +38,47 @@ export async function saveProductAction(payload: any, productId?: string) {
   revalidatePath("/dashboard/products");
   return { success: true };
 }
+
+export async function updateProductStatusAction(productId: string, data: any) {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("access_token")?.value;
+
+  if (!token) return { success: false, error: "Not authenticated" };
+
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_BASE_URL;
+  const res = await fetch(`${backendUrl}/products/${productId}`, {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+      "Cookie": `access_token=${token}`,
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) return { success: false, error: "Failed to update product" };
+
+  revalidatePath("/dashboard/admin/products");
+  revalidatePath("/dashboard/products");
+  return { success: true };
+}
+
+export async function deleteProductAction(productId: string) {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("access_token")?.value;
+
+  if (!token) return { success: false, error: "Not authenticated" };
+
+  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_BASE_URL;
+  const res = await fetch(`${backendUrl}/products/${productId}`, {
+    method: "DELETE",
+    headers: {
+      "Cookie": `access_token=${token}`,
+    },
+  });
+
+  if (!res.ok) return { success: false, error: "Failed to delete product" };
+
+  revalidatePath("/dashboard/admin/products");
+  revalidatePath("/dashboard/products");
+  return { success: true };
+}

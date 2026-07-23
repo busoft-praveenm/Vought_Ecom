@@ -22,7 +22,8 @@ import {
 } from "@/components/pagination";
 import { generatePagination } from "@/lib/pagination";
 import { ProductSearch, ActiveFiltersBreadcrumbs } from "../../products/search-form";
-import { getCategoriesAction } from "@/app/actions/category";
+import { getCategoriesAdminAction } from "@/app/actions/category";
+import { ProductActions, ProductStatusToggle } from "./product-actions";
 
 type Product = {
   id: string;
@@ -30,8 +31,9 @@ type Product = {
   sku: string;
   price: number;
   stock: number;
-  category: string;
+  categories: any[];
   status: string;
+  isActive?: boolean;
   currency?: string;
 };
 
@@ -62,7 +64,7 @@ export default async function AdminProductsPage({
       cache: "no-store",
     });
 
-    const catRes = await getCategoriesAction(1, 100);
+    const catRes = await getCategoriesAdminAction(1, 100);
     categories = catRes.data || [];
 
     if (!res.ok) {
@@ -126,6 +128,7 @@ export default async function AdminProductsPage({
               <TableHead>Category</TableHead>
               <TableHead className="text-right">Price</TableHead>
               <TableHead className="text-right">Stock</TableHead>
+              <TableHead className="text-center">Status</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -141,7 +144,7 @@ export default async function AdminProductsPage({
                 <TableRow key={product.id}>
                   <TableCell className="font-medium">{product.name}</TableCell>
                   <TableCell>{product.sku}</TableCell>
-                  <TableCell>{product.category ? (typeof product.category === 'string' ? product.category : (product.category as any).name) : "-"}</TableCell>
+                  <TableCell>{product.categories?.length > 0 ? product.categories.map((c: any) => c.name).join(', ') : "-"}</TableCell>
                   <TableCell className="text-right">
                     {product.currency === 'INR' ? '₹' : '$'}{Number(product.price).toFixed(2)}
                   </TableCell>
@@ -150,12 +153,11 @@ export default async function AdminProductsPage({
                       {product.stock}
                     </span>
                   </TableCell>
+                  <TableCell className="text-center">
+                    <ProductStatusToggle product={product} />
+                  </TableCell>
                   <TableCell className="text-right">
-                    <Link href={`/dashboard/admin/products/${product.id}/edit`}>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                    </Link>
+                    <ProductActions product={product} />
                   </TableCell>
                 </TableRow>
               ))

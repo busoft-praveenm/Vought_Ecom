@@ -1,8 +1,8 @@
 import React from "react";
 import { ProductForm } from "../../product-form";
 import { cookies } from "next/headers";
-import { getCategoriesAction } from "@/app/actions/category";
-import { getBrandsAction } from "@/app/actions/brand";
+import { getCategoriesAdminAction } from "@/app/actions/category";
+import { getBrandsAdminAction } from "@/app/actions/brand";
 
 export default async function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -13,10 +13,10 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
   let brands = [];
 
   try {
-    const categoriesResponse = await getCategoriesAction(1, 100);
+    const categoriesResponse = await getCategoriesAdminAction(1, 100);
     categories = categoriesResponse.data || [];
     
-    const brandsResponse = await getBrandsAction(1, 100);
+    const brandsResponse = await getBrandsAdminAction(1, 100);
     brands = brandsResponse.results || [];
 
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_BASE_URL;
@@ -40,7 +40,7 @@ export default async function EditProductPage({ params }: { params: Promise<{ id
           sku: product.sku || "",
           price: product.price ? String(product.price) : "",
           stock: product.stock ? String(product.stock) : "0",
-          category: product.category ? String(product.category.id) : "",
+          categories: product.categories ? product.categories.map((c: any) => String(c.id)) : [],
           brand: product.brand ? String(product.brand.id) : "",
           imageUrl: product.imageUrl || "",
           description: product.description || "",

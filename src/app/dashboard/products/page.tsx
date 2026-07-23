@@ -23,7 +23,7 @@ type Product = {
   name: string;
   price: number;
   stock: number;
-  category: string | any;
+  categories: any[];
   brand?: string | any;
   status: string;
   imageUrl?: string;
@@ -127,8 +127,8 @@ export default async function ProductsPage({
                     />
                   ) : (
                     <div className="w-full h-full bg-secondary/50 rounded-md flex items-center justify-center text-muted-foreground group-hover:scale-105 transition-transform duration-300">
-                      <span className="text-xs uppercase tracking-widest">
-                        {typeof product.category === 'string' ? product.category : (product.category as any)?.name || '-'}
+                      <span className="text-xs uppercase tracking-widest text-center px-2">
+                        {product.categories?.length > 0 ? product.categories.map((c: any) => c.name).join(', ') : '-'}
                       </span>
                     </div>
                   )}
@@ -146,7 +146,7 @@ export default async function ProductsPage({
 
                 <CardContent className="p-5 flex-1 flex flex-col">
                   <div className="text-[10px] font-bold text-primary mb-1.5 uppercase tracking-widest truncate">
-                    {product.category ? (typeof product.category === 'string' ? product.category : (product.category as any).name) : "Product"}
+                    {product.categories?.length > 0 ? product.categories.map((c: any) => c.name).join(', ') : "Product"}
                     {product.brand && ` • ${typeof product.brand === 'string' ? product.brand : (product.brand as any).name}`}
                   </div>
                   <h3 className="font-bold text-xl leading-tight line-clamp-2 text-foreground mb-2">{product.name}</h3>

@@ -3,7 +3,15 @@
 import { cookies } from "next/headers";
 import { revalidatePath } from "next/cache";
 
-export async function updateProfileAction(formData: { firstName: string; lastName: string; mobileNumber: string }) {
+export async function updateProfileAction(formData: { 
+  firstName: string; 
+  lastName: string; 
+  mobileNumber: string;
+  billingAddress?: string;
+  deliveryAddress?: string;
+  deliveryLat?: number;
+  deliveryLng?: number;
+}) {
   const cookieStore = await cookies();
   const token = cookieStore.get("access_token")?.value;
 

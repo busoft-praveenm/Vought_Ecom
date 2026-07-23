@@ -1,6 +1,7 @@
 import React from "react";
-import { getCategoriesAction } from "@/app/actions/category";
+import { getCategoriesAdminAction } from "@/app/actions/category";
 import { CategoryForm } from "./category-form";
+import { CategoryActions, CategoryStatusToggle } from "./category-actions";
 import {
   Table,
   TableBody,
@@ -23,15 +24,17 @@ import { generatePagination } from "@/lib/pagination";
 export default async function AdminCategoriesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ page?: string }>;
+  searchParams: Promise<{ page?: string; edit?: string }>;
 }) {
   const params = await searchParams;
   const page = Number(params.page) || 1;
+  const editId = params.edit;
   const limit = 10;
 
-  const { data: categories = [], total = 0 } = await getCategoriesAction(page, limit);
+  const { data: categories = [], total = 0 } = await getCategoriesAdminAction(page, limit);
 
   const totalPages = Math.ceil(total / limit) || 1;
+  const editCategory = editId ? categories.find((c: any) => c.id === Number(editId)) : null;
 
   const createPageUrl = (pageNumber: number) => {
     return `?page=${pageNumber}`;
@@ -46,7 +49,7 @@ export default async function AdminCategoriesPage({
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-1">
-          <CategoryForm />
+          <CategoryForm initialData={editCategory} key={editCategory?.id || 'new'} />
         </div>
 
         <div className="md:col-span-2 rounded-md border border-border bg-card overflow-hidden">
@@ -56,6 +59,7 @@ export default async function AdminCategoriesPage({
                 <TableHead>Name</TableHead>
                 <TableHead>Description</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -71,12 +75,10 @@ export default async function AdminCategoriesPage({
                     <TableCell className="font-medium">{category.name}</TableCell>
                     <TableCell>{category.description || "-"}</TableCell>
                     <TableCell>
-                      <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${category.isActive
-                        ? "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400"
-                        : "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400"
-                        }`}>
-                        {category.isActive ? "Active" : "Inactive"}
-                      </span>
+                      <CategoryStatusToggle category={category} />
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <CategoryActions category={category} />
                     </TableCell>
                   </TableRow>
                 ))
