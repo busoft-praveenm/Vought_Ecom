@@ -4,6 +4,7 @@ import { ShoppingCart, Trash2, ArrowLeft, Package, Plus, Minus } from "lucide-re
 import Link from "next/link";
 import { Button } from "@/components/button";
 import { updateCartItemQuantity, removeCartItem } from "@/app/actions/cart";
+import CheckoutButton from "./checkout-button";
 
 type CartData = {
   cart: {
@@ -164,9 +165,7 @@ export default async function CartPage() {
             <span className="text-primary">{currencySymbol}{subtotal.toFixed(2)}</span>
           </div>
           
-          <Button size="lg" className="w-full">
-            Proceed to Checkout
-          </Button>
+          <CheckoutButton disabled={items.length === 0} />
         </div>
         
       </div>
