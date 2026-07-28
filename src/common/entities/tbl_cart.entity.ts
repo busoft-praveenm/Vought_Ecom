@@ -1,5 +1,6 @@
-import { CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { CreateDateColumn, DeleteDateColumn, Entity, JoinColumn, OneToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import { UserDb } from "./tbl_user.entity";
+import { CartItemDb } from "./tbl_cart_items.entity";
 
 @Entity('tbl_cart')
 export class CartDb {
@@ -10,6 +11,9 @@ export class CartDb {
   @OneToOne(() => UserDb, { onDelete: "CASCADE" })
   @JoinColumn()
   user: UserDb;
+
+  @OneToMany(() => CartItemDb, cartItem => cartItem.cart)
+  items: CartItemDb[];
 
   @CreateDateColumn()
   createdAt: Date;

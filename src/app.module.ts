@@ -14,8 +14,9 @@ import { CartModule } from './apis/cart/cart.module';
 import { UsersModule } from './apis/users/users.module';
 import { CategoriesModule } from './apis/categories/categories.module';
 import { BrandsModule } from './apis/brands/brands.module';
-import { BullModule } from '@nestjs/bullmq';
 import { JobsModule } from './jobs/jobs.module';
+import { OrdersModule } from './apis/orders/orders.module';
+import { BullModule } from '@nestjs/bullmq';
 
 @Module({
   imports: [
@@ -61,7 +62,8 @@ import { JobsModule } from './jobs/jobs.module';
     UsersModule,
     CategoriesModule,
     BrandsModule,
-    JobsModule
+    JobsModule,
+    OrdersModule
   ],
   controllers: [AppController],
   providers: [AppService],
