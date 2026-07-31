@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { mat4, quat, vec2, vec3 } from 'gl-matrix';
 import './InfiniteMenu.css';
 
@@ -958,6 +959,7 @@ export default function InfiniteMenu({ items = [], scale = 1.0 }: { items?: any[
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [activeItem, setActiveItem] = useState<any>(null);
   const [isMoving, setIsMoving] = useState(false);
+  const router = useRouter();
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -998,7 +1000,7 @@ export default function InfiniteMenu({ items = [], scale = 1.0 }: { items?: any[
     if (activeItem.link.startsWith('http')) {
       window.open(activeItem.link, '_blank');
     } else {
-      console.log('Internal route:', activeItem.link);
+      router.push(activeItem.link);
     }
   };
 

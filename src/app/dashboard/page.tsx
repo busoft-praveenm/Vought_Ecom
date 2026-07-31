@@ -156,7 +156,7 @@ async function UserLanding() {
               items={productItems}
               baseWidth={1000}
               autoplay
-              autoplayDelay={3000}
+              autoplayDelay={2000}
               pauseOnHover={true}
               loop={true}
               round={false}

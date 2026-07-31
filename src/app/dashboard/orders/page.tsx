@@ -3,7 +3,23 @@ import { cookies } from "next/headers";
 import { Package, ArrowLeft, CheckCircle2, Clock, XCircle } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { redirect } from "next/navigation";
+import { updateOrderStatusAction } from "@/app/actions/orders";
+
+const STAGES = [
+  { id: 'ORDER_PLACED', label: 'Order Placed' },
+  { id: 'PACKAGING_DONE', label: 'Packaging' },
+  { id: 'ASSIGNED_DELIVERY_AGENT', label: 'Agent Assigned' },
+  { id: 'OUT_FOR_DELIVERY', label: 'Out for Delivery' },
+  { id: 'DELIVERED', label: 'Delivered' }
+];
 
 export default async function OrdersPage() {
   const cookieStore = await cookies();
@@ -32,6 +48,7 @@ export default async function OrdersPage() {
   }
 
   const orders = await res.json();
+  const isAdmin = orders.some((o: any) => !!o.user);
 
   if (orders.length === 0) {
     return (
@@ -79,16 +96,59 @@ export default async function OrdersPage() {
                   <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-1">Order #</p>
                   <p className="text-sm font-semibold">VGT-{order.id.toString().padStart(6, '0')}</p>
                 </div>
+                <div>
+                  <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-1">Est. Delivery</p>
+                  <p className="text-sm font-semibold">
+                    {order.expectedDeliveryDate ? new Date(order.expectedDeliveryDate).toLocaleDateString() : 'N/A'}
+                  </p>
+                </div>
               </div>
               <div className="flex items-center gap-2">
-                {order.status === 'PAID' && <span className="flex items-center text-sm font-medium text-green-600 bg-green-100 px-3 py-1 rounded-full"><CheckCircle2 className="w-4 h-4 mr-1"/> Paid</span>}
                 {order.status === 'PENDING' && <span className="flex items-center text-sm font-medium text-yellow-600 bg-yellow-100 px-3 py-1 rounded-full"><Clock className="w-4 h-4 mr-1"/> Pending</span>}
                 {order.status === 'FAILED' && <span className="flex items-center text-sm font-medium text-red-600 bg-red-100 px-3 py-1 rounded-full"><XCircle className="w-4 h-4 mr-1"/> Failed</span>}
               </div>
             </div>
             
+            {/* Stepper UI */}
+            {!['PENDING', 'FAILED'].includes(order.status) && (
+              <div className="px-8 py-8 border-b border-border/50 bg-muted/10">
+                <div className="relative">
+                  <div className="absolute left-0 top-4 -translate-y-1/2 w-full h-1 bg-muted rounded-full"></div>
+                  
+                  {(() => {
+                    const currentStageIndex = STAGES.findIndex(s => s.id === order.status);
+                    return (
+                      <>
+                        <div 
+                          className="absolute left-0 top-4 -translate-y-1/2 h-1 bg-primary rounded-full transition-all duration-500" 
+                          style={{ width: `${(Math.max(0, currentStageIndex) / (STAGES.length - 1)) * 100}%` }}
+                        ></div>
+                        <div className="relative flex justify-between">
+                          {STAGES.map((stage, idx) => {
+                            const isCompleted = currentStageIndex >= idx;
+                            return (
+                              <div key={stage.id} className="flex flex-col items-center">
+                                <div className={`w-8 h-8 rounded-full flex items-center justify-center border-2 mb-3 bg-background z-10 transition-colors duration-500 ${
+                                  isCompleted ? 'border-primary bg-primary text-primary-foreground' : 'border-muted text-muted-foreground'
+                                }`}>
+                                  {isCompleted ? <CheckCircle2 className="w-5 h-5" /> : <div className="w-2.5 h-2.5 rounded-full bg-muted-foreground/30" />}
+                                </div>
+                                <span className={`text-xs font-bold text-center w-24 leading-tight ${isCompleted ? 'text-foreground' : 'text-muted-foreground'}`}>
+                                  {stage.label}
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
+              </div>
+            )}
+            
             <div className="p-6">
-              {order.user?.profile && (
+              {isAdmin && order.user?.profile && (
                 <div className="mb-6 pb-6 border-b border-border/50">
                   <h3 className="font-medium text-sm text-muted-foreground mb-2">Customer Details</h3>
                   <p className="text-sm font-semibold">{order.user.profile.firstName} {order.user.profile.lastName}</p>
@@ -119,6 +179,29 @@ export default async function OrdersPage() {
                   </div>
                 ))}
               </div>
+
+              {isAdmin && (
+                <form action={updateOrderStatusAction.bind(null, order.id)} className="mt-8 flex items-center gap-4 border-t border-border/50 pt-6">
+                  <label className="text-sm font-semibold whitespace-nowrap">Admin Action: Update Status</label>
+                  <Select key={order.status} name="status" defaultValue={order.status}>
+                    <SelectTrigger className="w-64 bg-background">
+                      <SelectValue placeholder="Select status">
+                        {order.status === 'PENDING' ? 'Pending (Payment Incomplete)' : 
+                         order.status === 'FAILED' ? 'Failed' : 
+                         STAGES.find(s => s.id === order.status)?.label || order.status}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="PENDING">Pending (Payment Incomplete)</SelectItem>
+                      <SelectItem value="FAILED">Failed</SelectItem>
+                      {STAGES.map(s => (
+                        <SelectItem key={s.id} value={s.id}>{s.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Button type="submit" size="default">Update Status</Button>
+                </form>
+              )}
             </div>
           </div>
         ))}

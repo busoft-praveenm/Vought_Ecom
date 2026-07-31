@@ -29,14 +29,24 @@ export default async function CartPage() {
   const cookieStore = await cookies();
   const token = cookieStore.get('access_token')?.value;
 
-  const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/cart`, {
-    headers: {
-      ...(token ? { "Cookie": `access_token=${token}` } : {})
-    },
-    cache: 'no-store'
-  });
+  const [cartRes, estimateRes] = await Promise.all([
+    fetch(`${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/cart`, {
+      headers: { ...(token ? { "Cookie": `access_token=${token}` } : {}) },
+      cache: 'no-store'
+    }),
+    fetch(`${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/orders/estimate`, {
+      headers: { ...(token ? { "Cookie": `access_token=${token}` } : {}) },
+      cache: 'no-store'
+    })
+  ]);
 
-  if (!res.ok) {
+  let estimatedDeliveryDate = null;
+  if (estimateRes.ok) {
+    const estData = await estimateRes.json();
+    estimatedDeliveryDate = estData.estimatedDeliveryDate;
+  }
+
+  if (!cartRes.ok) {
     return (
       <div className="p-8 text-center">
         <h2 className="text-xl font-bold mb-4">Error loading cart</h2>
@@ -47,7 +57,7 @@ export default async function CartPage() {
     );
   }
 
-  const data: CartData = await res.json();
+  const data: CartData = await cartRes.json();
   const items = data?.items || [];
   
   const subtotal = items.reduce((acc, item) => acc + (item.quantity * Number(item.product.price)), 0);
@@ -158,6 +168,12 @@ export default async function CartPage() {
               <span>Tax (Estimated)</span>
               <span>{currencySymbol}0.00</span>
             </div>
+            {estimatedDeliveryDate && (
+              <div className="flex justify-between text-muted-foreground mt-4 pt-4 border-t border-border/30">
+                <span className="font-medium text-foreground">Est. Delivery</span>
+                <span className="font-semibold text-primary">{new Date(estimatedDeliveryDate).toLocaleDateString()}</span>
+              </div>
+            )}
           </div>
           
           <div className="flex justify-between font-bold text-lg mb-8 pt-4 border-t border-border/50">

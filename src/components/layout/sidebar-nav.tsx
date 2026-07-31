@@ -3,7 +3,7 @@
 import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Activity, LayoutGrid, ShoppingCart, Users, Package, Bookmark, Receipt } from "lucide-react";
+import { Activity, LayoutGrid, ShoppingCart, Users, Package, Bookmark, Receipt, Building } from "lucide-react";
 
 export function SidebarNav({ isAdmin = false }: { isAdmin?: boolean }) {
   const pathname = usePathname();
@@ -11,6 +11,7 @@ export function SidebarNav({ isAdmin = false }: { isAdmin?: boolean }) {
   const isProducts = pathname.startsWith("/dashboard/products") && !pathname.startsWith("/dashboard/admin/products");
   const isAdminProducts = pathname.startsWith("/dashboard/admin/products");
   const isAdminCustomers = pathname.startsWith("/dashboard/admin/customers");
+  const isWarehouses = pathname.startsWith("/dashboard/admin/warehouses");
   const isOrders = pathname.startsWith("/dashboard/orders");
   const isOverview = pathname === "/dashboard";
 
@@ -97,6 +98,17 @@ export function SidebarNav({ isAdmin = false }: { isAdmin?: boolean }) {
           >
             <Package className={`h-5 w-5 ${isAdminProducts ? "text-zinc-50" : ""}`} />
             Products Inventory
+          </Link>
+          <Link 
+            href="/dashboard/admin/warehouses" 
+            className={`flex items-center gap-3 rounded-lg px-3 py-2 transition-all ${
+              isWarehouses 
+                ? "bg-zinc-800/80 text-zinc-50" 
+                : "text-zinc-400 hover:text-zinc-50 hover:bg-zinc-800/50"
+            }`}
+          >
+            <Building className={`h-5 w-5 ${isWarehouses ? "text-zinc-50" : ""}`} />
+            Warehouses
           </Link>
         </>
       )}

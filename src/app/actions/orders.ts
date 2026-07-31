@@ -88,3 +88,31 @@ export async function getOrders() {
 
   return res.json();
 }
+
+export async function updateOrderStatusAction(orderId: number, formData: FormData) {
+  const status = formData.get('status') as string;
+  const cookieStore = await cookies();
+  const token = cookieStore.get('access_token')?.value;
+
+  if (!token) {
+    throw new Error('Not authenticated');
+  }
+
+  const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/orders/${orderId}/status`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      'Cookie': `access_token=${token}`,
+    },
+    body: JSON.stringify({ status }),
+    cache: 'no-store'
+  });
+
+  if (!res.ok) {
+    const error = await res.json();
+    throw new Error(error.message || 'Failed to update order status');
+  }
+
+  revalidatePath('/dashboard/orders');
+  return res.json();
+}
