@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import cookieParser from 'cookie-parser';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 async function startapp() {
   const app = await NestFactory.create(AppModule);
@@ -9,6 +10,16 @@ async function startapp() {
     credentials: true,
   });
   app.use(cookieParser());
+
+  const config = new DocumentBuilder()
+    .setTitle('E-Commerce API')
+    .setDescription('The E-Commerce API description')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build();
+  const documentFactory = () => SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api', app, documentFactory);
+
   const port = process.env.port ?? 8080
   await app.listen(port);
   console.log(`Listening on port: ${port}`)

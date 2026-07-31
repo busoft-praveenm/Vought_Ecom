@@ -4,8 +4,11 @@ import { FirebaseAuthGuard } from "@/guards/firebase.auth.guard";
 import { RolesGuard } from "@/guards/roles.guard";
 import { Roles } from "@/decorators/roles.decorator";
 import { CacheInterceptor, CacheKey, CacheTTL } from "@nestjs/cache-manager";
+import { ApiTags, ApiBearerAuth } from "@nestjs/swagger";
+import { SwaggerGetProducts, SwaggerGetRandomProducts, SwaggerGetProduct, SwaggerCreateProduct, SwaggerUpdateProduct, SwaggerDeleteProduct } from "./products.swagger";
 
-
+@ApiBearerAuth()
+@ApiTags('Products')
 @Controller('products')
 export class ProductsController {
 
@@ -16,6 +19,7 @@ export class ProductsController {
   @UseGuards(FirebaseAuthGuard)
   @UseInterceptors(CacheInterceptor)
   @CacheTTL(300000) // 5 minutes
+  @SwaggerGetProducts()
   @Get()
   async getProducts(
     @Query('page') page = '1',
@@ -29,6 +33,7 @@ export class ProductsController {
     return this.productsService.getProducts(Number(page),Number(limit),search, category, brand, isAdmin);
   }
 
+  @SwaggerGetRandomProducts()
   @Get('random')
   async getRandomProducts(@Query('limit') limit = '5') {
     // Note: We bypass ProductsService here for simplicity, 
@@ -39,6 +44,7 @@ export class ProductsController {
   }
 
   @UseGuards(FirebaseAuthGuard)
+  @SwaggerGetProduct()
   @Get(':id')
   async getProduct(@Param('id') id: string) {
     return this.productsService.getProduct(Number(id));
@@ -46,6 +52,7 @@ export class ProductsController {
 
   @UseGuards(FirebaseAuthGuard, RolesGuard)
   @Roles('admin')
+  @SwaggerCreateProduct()
   @Post()
   async createProduct(@Body() createProductDto: any) {
     return this.productsService.createProduct(createProductDto);
@@ -53,6 +60,7 @@ export class ProductsController {
 
   @UseGuards(FirebaseAuthGuard, RolesGuard)
   @Roles('admin')
+  @SwaggerUpdateProduct()
   @Patch(':id')
   async updateProduct(@Param('id') id: string, @Body() updateProductDto: any) {
     return this.productsService.updateProduct(Number(id), updateProductDto);
@@ -60,6 +68,7 @@ export class ProductsController {
 
   @UseGuards(FirebaseAuthGuard, RolesGuard)
   @Roles('admin')
+  @SwaggerDeleteProduct()
   @Delete(':id')
   async deleteProduct(@Param('id') id: string) {
     return this.productsService.deleteProduct(Number(id));

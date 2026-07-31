@@ -8,13 +8,18 @@ import {
   JoinColumn,
   OneToMany,
 } from 'typeorm';
-import { UserDb } from './tbl_user.entity';
-import { OrderItemDb } from './tbl_order_items.entity';
+import type { UserDb } from './tbl_user.entity';
+import type { OrderItemDb } from './tbl_order_items.entity';
+import type { WarehouseDb } from './tbl_warehouse.entity';
 
 export enum OrderStatus {
   PENDING = 'PENDING',
-  PAID = 'PAID',
   FAILED = 'FAILED',
+  ORDER_PLACED = 'ORDER_PLACED',
+  PACKAGING_DONE = 'PACKAGING_DONE',
+  ASSIGNED_DELIVERY_AGENT = 'ASSIGNED_DELIVERY_AGENT',
+  OUT_FOR_DELIVERY = 'OUT_FOR_DELIVERY',
+  DELIVERED = 'DELIVERED',
 }
 
 @Entity({ name: 'tbl_order' })
@@ -22,7 +27,7 @@ export class OrderDb {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => UserDb)
+  @ManyToOne('UserDb')
   @JoinColumn({ name: 'user_id' })
   user: UserDb;
 
@@ -47,8 +52,18 @@ export class OrderDb {
   @Column({ name: 'razorpay_signature', type: 'varchar', nullable: true })
   razorpaySignature: string;
 
-  @OneToMany(() => OrderItemDb, (orderItem) => orderItem.order)
+  @OneToMany('OrderItemDb', (orderItem: any) => orderItem.order)
   items: OrderItemDb[];
+
+  @ManyToOne('WarehouseDb', { nullable: true })
+  @JoinColumn({ name: 'warehouse_id' })
+  warehouse: WarehouseDb;
+
+  @Column({ name: 'expected_delivery_date', type: 'timestamp', nullable: true })
+  expectedDeliveryDate: Date;
+
+  @Column({ name: 'distance_km', type: 'decimal', precision: 10, scale: 2, nullable: true })
+  distanceKm: number;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

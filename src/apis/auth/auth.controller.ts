@@ -2,7 +2,11 @@ import { Controller, Get, Headers, Post, Put, Req, Res, UseGuards, Body } from "
 import { AuthService } from "./auth.service";
 import type { Request, Response } from "express";
 import { FirebaseAuthGuard } from "@/guards/firebase.auth.guard";
+import { ApiTags, ApiBearerAuth } from "@nestjs/swagger";
+import { SwaggerFirebaseLogin, SwaggerLogout, SwaggerGetMe, SwaggerUpdateProfile } from "./auth.swagger";
 
+@ApiBearerAuth()
+@ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
 
@@ -10,6 +14,7 @@ export class AuthController {
     private readonly authService: AuthService
   ){}
 
+  @SwaggerFirebaseLogin()
   @Post('login')
   async firebaseLogin(
     @Headers('authorization') authHeader: string,
@@ -40,6 +45,7 @@ export class AuthController {
 
   }
 
+  @SwaggerLogout()
   @Post('logout')
   async logout(
     @Req() request: Request,
@@ -70,6 +76,7 @@ export class AuthController {
   }
 
   @UseGuards(FirebaseAuthGuard)
+  @SwaggerGetMe()
   @Get('me')
   async getMe(@Req() request: Request) {
     return {
@@ -79,6 +86,7 @@ export class AuthController {
   }
 
   @UseGuards(FirebaseAuthGuard)
+  @SwaggerUpdateProfile()
   @Put('profile')
   async updateProfile(@Req() request: Request, @Body() body: any) {
     const userId = request['dbUser'].id;

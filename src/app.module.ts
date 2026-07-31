@@ -17,6 +17,8 @@ import { BrandsModule } from './apis/brands/brands.module';
 import { JobsModule } from './jobs/jobs.module';
 import { OrdersModule } from './apis/orders/orders.module';
 import { BullModule } from '@nestjs/bullmq';
+import { WarehousesModule } from './apis/warehouses/warehouses.module';
+import { EmailModule } from './apis/email/email.module';
 
 @Module({
   imports: [
@@ -63,7 +65,9 @@ import { BullModule } from '@nestjs/bullmq';
     CategoriesModule,
     BrandsModule,
     JobsModule,
-    OrdersModule
+    OrdersModule,
+    WarehousesModule,
+    EmailModule
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -14,6 +14,8 @@ import { CartDbService } from "./cart-db.service";
 import { BrandDb } from "../entities/tbl_brand.entity";
 import { CategoryDb } from "../entities/tbl_category.entity";
 import { CategoryDbService } from './category-db.service';
+import { WarehouseDb } from "../entities/tbl_warehouse.entity";
+import { WarehouseProductDb } from "../entities/tbl_warehouse_products.entity";
 import { BullModule } from '@nestjs/bullmq';
 
 @Module({
@@ -27,7 +29,9 @@ import { BullModule } from '@nestjs/bullmq';
       CategoryDb,
       CartDb,
       CartItemDb,
-      ProductReviewDb
+      ProductReviewDb,
+      WarehouseDb,
+      WarehouseProductDb
     ]),
     BullModule.registerQueue(
       { name: 'cascade-deletion' },

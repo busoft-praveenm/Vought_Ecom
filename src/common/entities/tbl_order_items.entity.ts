@@ -5,7 +5,7 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { OrderDb } from './tbl_order.entity';
+import type { OrderDb } from './tbl_order.entity';
 import { ProductsDb } from './tbl_products.entity';
 
 @Entity({ name: 'tbl_order_items' })
@@ -13,7 +13,7 @@ export class OrderItemDb {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => OrderDb, (order) => order.items)
+  @ManyToOne('OrderDb', (order: any) => order.items)
   @JoinColumn({ name: 'order_id' })
   order: OrderDb;
 

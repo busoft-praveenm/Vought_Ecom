@@ -7,7 +7,11 @@ import { CacheInterceptor, CacheTTL, CACHE_MANAGER } from "@nestjs/cache-manager
 import { ConfigService } from "@nestjs/config";
 import type { Cache } from "cache-manager";
 import { UserStatus } from "@/common/entities/tbl_user.entity";
+import { ApiTags, ApiBearerAuth } from "@nestjs/swagger";
+import { SwaggerGetCustomers, SwaggerUpdateUserStatus } from "./users.swagger";
 
+@ApiBearerAuth()
+@ApiTags('Users')
 @Controller('users')
 export class UsersController {
   constructor(
@@ -20,6 +24,7 @@ export class UsersController {
   @Roles('admin')
   @UseInterceptors(CacheInterceptor)
   @CacheTTL(300000)
+  @SwaggerGetCustomers()
   @Get('customers')
   async getCustomers(
     @Query('page') page = '1',
@@ -30,6 +35,7 @@ export class UsersController {
 
   @UseGuards(FirebaseAuthGuard, RolesGuard)
   @Roles('admin')
+  @SwaggerUpdateUserStatus()
   @Patch(':id/status')
   async updateUserStatus(
     @Param('id') id: string,

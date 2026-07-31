@@ -9,6 +9,8 @@ import { CategoryDb } from "@/common/entities/tbl_category.entity";
 import { BrandDb } from "@/common/entities/tbl_brand.entity";
 import { OrderDb } from "@/common/entities/tbl_order.entity";
 import { OrderItemDb } from "@/common/entities/tbl_order_items.entity";
+import { WarehouseDb } from "@/common/entities/tbl_warehouse.entity";
+import { WarehouseProductDb } from "@/common/entities/tbl_warehouse_products.entity";
 import { registerAs } from "@nestjs/config";
 import { TypeOrmModuleOptions } from "@nestjs/typeorm";
 import { SnakeNamingStrategy } from "typeorm-naming-strategies";
@@ -23,7 +25,7 @@ export const databaseConfig = registerAs(
     username: process.env.MY_SQL_DB_USER,
     password: process.env.MY_SQL_DB_PASS,
     database: process.env.MY_SQL_DB_NAME,
-    entities: [UserDb, UserProfileDb, ProductsDb, ProductReviewDb, CartDb, CartItemDb, RoleDb, CategoryDb, BrandDb, OrderDb, OrderItemDb],
+    entities: [UserDb, UserProfileDb, ProductsDb, ProductReviewDb, CartDb, CartItemDb, RoleDb, CategoryDb, BrandDb, OrderDb, OrderItemDb, WarehouseDb, WarehouseProductDb],
     synchronize: false,
     namingStrategy: new SnakeNamingStrategy(),
   })
