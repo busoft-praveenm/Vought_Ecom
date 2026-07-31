@@ -1,0 +1,6 @@
+import { UserStatus } from '@prisma/client';
+
+export class UpdateUserStatusDto {
+  status?: UserStatus;
+  isActive?: boolean;
+}

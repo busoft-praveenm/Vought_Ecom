@@ -1,5 +1,6 @@
 import { UserDbService } from "@/common/db-services/user-db.service";
 import { UserDb } from "@/common/entities/tbl_user.entity";
+import { UserStatus } from "@prisma/client";
 import { FirebaseAuthGuard } from "@/guards/firebase.auth.guard";
 import { Inject, Injectable, UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
@@ -74,7 +75,7 @@ export class AuthService {
       }
 
        if (
-        user.status === 'inactive'
+        user.status === UserStatus.INACTIVE
       ) {
         throw new UnauthorizedException(
           'User account inactive',

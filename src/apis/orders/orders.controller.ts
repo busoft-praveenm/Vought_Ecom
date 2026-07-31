@@ -1,5 +1,7 @@
 import { Controller, Post, Get, Patch, Body, Param, Req, UseGuards } from '@nestjs/common';
 import { OrdersService } from './orders.service';
+import { VerifyPaymentDto } from './dto/verify-payment.dto';
+import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 import { FirebaseAuthGuard } from '@/guards/firebase.auth.guard';
 import { RolesGuard } from '@/guards/roles.guard';
 import { Roles } from '@/decorators/roles.decorator';
@@ -24,15 +26,13 @@ export class OrdersController {
   @Post('verify')
   async verifyPayment(
     @Req() req: any,
-    @Body('razorpay_order_id') razorpayOrderId: string,
-    @Body('razorpay_payment_id') razorpayPaymentId: string,
-    @Body('razorpay_signature') razorpaySignature: string,
+    @Body() body: VerifyPaymentDto,
   ) {
     return this.ordersService.verifyPayment(
       req.dbUser.id,
-      razorpayOrderId,
-      razorpayPaymentId,
-      razorpaySignature,
+      body.razorpay_order_id,
+      body.razorpay_payment_id,
+      body.razorpay_signature,
     );
   }
 
@@ -57,8 +57,8 @@ export class OrdersController {
   @Patch(':id/status')
   async updateStatus(
     @Param('id') id: string,
-    @Body('status') status: any,
+    @Body() body: UpdateOrderStatusDto,
   ) {
-    return this.ordersService.updateStatus(Number(id), status);
+    return this.ordersService.updateStatus(Number(id), body.status as any);
   }
 }

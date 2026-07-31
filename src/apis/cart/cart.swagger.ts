@@ -1,5 +1,7 @@
 import { applyDecorators } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiParam, ApiBody } from '@nestjs/swagger';
+import { CartItemDto } from './dto/cart-item.dto';
+import { UpdateCartItemDto } from './dto/update-cart-item.dto';
 
 export function SwaggerGetCart() {
   return applyDecorators(
@@ -12,7 +14,7 @@ export function SwaggerGetCart() {
 export function SwaggerAddItem() {
   return applyDecorators(
     ApiOperation({ summary: 'Add an item to the cart' }),
-    ApiBody({ description: 'Product ID and Quantity', schema: { type: 'object', properties: { productId: { type: 'number' }, quantity: { type: 'number' } } } }),
+    ApiBody({ description: 'Product ID and Quantity', type: CartItemDto }),
     ApiResponse({ status: 201, description: 'Item added successfully.' }),
     ApiResponse({ status: 401, description: 'Unauthorized.' })
   );
@@ -22,7 +24,7 @@ export function SwaggerUpdateItemQuantity() {
   return applyDecorators(
     ApiOperation({ summary: 'Update cart item quantity' }),
     ApiParam({ name: 'id', required: true, type: String }),
-    ApiBody({ description: 'New quantity', schema: { type: 'object', properties: { quantity: { type: 'number' } } } }),
+    ApiBody({ description: 'New quantity', type: UpdateCartItemDto }),
     ApiResponse({ status: 200, description: 'Item quantity updated successfully.' }),
     ApiResponse({ status: 401, description: 'Unauthorized.' })
   );

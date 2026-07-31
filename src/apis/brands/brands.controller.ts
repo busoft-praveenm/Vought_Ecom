@@ -1,5 +1,7 @@
 import { Controller, Get, Post, Patch, Delete, Body, Param, UseGuards, Query } from "@nestjs/common";
 import { BrandDbService } from "@/common/db-services/brand-db.service";
+import { CreateBrandDto } from "./dto/create-brand.dto";
+import { UpdateBrandDto } from "./dto/update-brand.dto";
 import { FirebaseAuthGuard } from "@/guards/firebase.auth.guard";
 import { RolesGuard } from "@/guards/roles.guard";
 import { Roles } from "@/decorators/roles.decorator";
@@ -42,16 +44,16 @@ export class BrandsController {
   @Roles('admin')
   @SwaggerCreateBrand()
   @Post()
-  async createBrand(@Body() body: { name: string; description?: string; imageUrl?: string }) {
-    return this.brandDbService.createBrand(body.name, body.description, body.imageUrl);
+  async createBrand(@Body() createBrandDto: CreateBrandDto) {
+    return this.brandDbService.createBrand(createBrandDto.name, createBrandDto.description, createBrandDto.imageUrl);
   }
 
   @UseGuards(FirebaseAuthGuard, RolesGuard)
   @Roles('admin')
   @SwaggerUpdateBrand()
   @Patch(':id')
-  async updateBrand(@Param('id') id: string, @Body() body: any) {
-    return this.brandDbService.updateBrand(Number(id), body);
+  async updateBrand(@Param('id') id: string, @Body() updateBrandDto: UpdateBrandDto) {
+    return this.brandDbService.updateBrand(Number(id), updateBrandDto);
   }
 
   @UseGuards(FirebaseAuthGuard, RolesGuard)

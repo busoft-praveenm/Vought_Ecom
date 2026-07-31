@@ -1,6 +1,9 @@
 import { Controller, Get, Post, Body, Param, Put, Delete, UseGuards } from '@nestjs/common';
 import { WarehousesService } from './warehouses.service';
 import { WarehouseDb } from '@/common/entities/tbl_warehouse.entity';
+import { CreateWarehouseDto } from './dto/create-warehouse.dto';
+import { UpdateWarehouseDto } from './dto/update-warehouse.dto';
+import { SetInventoryDto } from './dto/set-inventory.dto';
 import { RolesGuard } from '@/guards/roles.guard';
 import { Roles } from '@/decorators/roles.decorator';
 import { FirebaseAuthGuard } from '@/guards/firebase.auth.guard';
@@ -31,8 +34,8 @@ export class WarehousesController {
   @Roles('admin')
   @SwaggerCreateWarehouse()
   @Post()
-  async create(@Body() data: Partial<WarehouseDb>) {
-    return this.warehousesService.create(data);
+  async create(@Body() data: CreateWarehouseDto) {
+    return this.warehousesService.create(data as any);
   }
 
 
@@ -41,8 +44,8 @@ export class WarehousesController {
   @Roles('admin')
   @SwaggerUpdateWarehouse()
   @Put(':id')
-  async update(@Param('id') id: string, @Body() data: Partial<WarehouseDb>) {
-    return this.warehousesService.update(+id, data);
+  async update(@Param('id') id: string, @Body() data: UpdateWarehouseDto) {
+    return this.warehousesService.update(+id, data as any);
   }
 
 
@@ -73,7 +76,7 @@ export class WarehousesController {
   @Post(':id/inventory')
   async setInventory(
     @Param('id') id: string,
-    @Body() body: { productId: number; quantity: number },
+    @Body() body: SetInventoryDto,
   ) {
     return this.warehousesService.setInventory(+id, body.productId, body.quantity);
   }

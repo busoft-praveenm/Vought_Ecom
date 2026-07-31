@@ -1,5 +1,7 @@
 import { Controller, Get, Headers, Post, Put, Req, Res, UseGuards, Body } from "@nestjs/common";
 import { AuthService } from "./auth.service";
+import { LoginDto } from "./dto/login.dto";
+import { UpdateUserProfileDto } from "../users/dto/update-user-profile.dto";
 import type { Request, Response } from "express";
 import { FirebaseAuthGuard } from "@/guards/firebase.auth.guard";
 import { ApiTags, ApiBearerAuth } from "@nestjs/swagger";
@@ -19,7 +21,7 @@ export class AuthController {
   async firebaseLogin(
     @Headers('authorization') authHeader: string,
     @Res({ passthrough: true }) response: Response,
-    @Body() body?: any
+    @Body() body?: LoginDto
   ){
     
     const token = authHeader?.replace('Bearer ', '');
@@ -88,7 +90,7 @@ export class AuthController {
   @UseGuards(FirebaseAuthGuard)
   @SwaggerUpdateProfile()
   @Put('profile')
-  async updateProfile(@Req() request: Request, @Body() body: any) {
+  async updateProfile(@Req() request: Request, @Body() body: UpdateUserProfileDto) {
     const userId = request['dbUser'].id;
     return this.authService.updateProfile(userId, body);
   }

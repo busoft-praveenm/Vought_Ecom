@@ -1,13 +1,13 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
 import { Logger } from '@nestjs/common';
-import { DataSource } from 'typeorm';
+import { PrismaService } from '@/prisma/prisma.service';
 
 @Processor('review-aggregation')
 export class ReviewAggregationProcessor extends WorkerHost {
   private readonly logger = new Logger(ReviewAggregationProcessor.name);
 
-  constructor(private readonly dataSource: DataSource) {
+  constructor(private readonly prisma: PrismaService) {
     super();
   }
 
@@ -17,21 +17,17 @@ export class ReviewAggregationProcessor extends WorkerHost {
     const { productId } = job.data;
 
     try {
-      const result = await this.dataSource
-        .createQueryBuilder()
-        .select('AVG(rating)', 'average')
-        .from('tbl_product_review', 'review')
-        .where('review.productId = :productId', { productId })
-        .getRawOne();
+      const result = await this.prisma.productReviewDb.aggregate({
+        _avg: { rating: true },
+        where: { productId }
+      });
         
-      const newAverage = result && result.average ? parseFloat(result.average) : 0;
+      const newAverage = result._avg.rating ?? 0;
       
-      await this.dataSource
-        .createQueryBuilder()
-        .update('tbl_products')
-        .set({ averageRating: newAverage })
-        .where('id = :productId', { productId })
-        .execute();
+      await this.prisma.productsDb.update({
+        where: { id: productId },
+        data: { averageRating: newAverage }
+      });
 
       this.logger.log(`Successfully updated average rating for product ${productId} to ${newAverage}`);
     } catch (error) {

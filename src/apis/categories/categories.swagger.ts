@@ -1,5 +1,7 @@
 import { applyDecorators } from '@nestjs/common';
 import { ApiOperation, ApiQuery, ApiResponse, ApiParam, ApiBody } from '@nestjs/swagger';
+import { CreateCategoryDto } from './dto/create-category.dto';
+import { UpdateCategoryDto } from './dto/update-category.dto';
 
 export function SwaggerGetCategories() {
   return applyDecorators(
@@ -32,7 +34,7 @@ export function SwaggerGetCategoriesAdmin() {
 export function SwaggerCreateCategory() {
   return applyDecorators(
     ApiOperation({ summary: 'Create a new category' }),
-    ApiBody({ description: 'Category data' }),
+    ApiBody({ description: 'Category data', type: CreateCategoryDto }),
     ApiResponse({ status: 201, description: 'Category created successfully.' }),
     ApiResponse({ status: 401, description: 'Unauthorized.' }),
     ApiResponse({ status: 403, description: 'Forbidden. Requires admin role.' })
@@ -43,7 +45,7 @@ export function SwaggerUpdateCategory() {
   return applyDecorators(
     ApiOperation({ summary: 'Update a category' }),
     ApiParam({ name: 'id', required: true, type: String }),
-    ApiBody({ description: 'Category data to update' }),
+    ApiBody({ description: 'Category data to update', type: UpdateCategoryDto }),
     ApiResponse({ status: 200, description: 'Category updated successfully.' }),
     ApiResponse({ status: 401, description: 'Unauthorized.' }),
     ApiResponse({ status: 403, description: 'Forbidden. Requires admin role.' })

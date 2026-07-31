@@ -13,8 +13,8 @@ async function bootstrap() {
   const w1 = await warehousesService.create({
     name: 'Chennai North Hub',
     address: 'Anna Nagar, Chennai, Tamil Nadu',
-    lat: 13.0846,
-    lng: 80.2179,
+    lat: 13.0846 as any,
+    lng: 80.2179 as any,
     processingTimeHours: 12,
     isActive: true,
   });
@@ -22,8 +22,8 @@ async function bootstrap() {
   const w2 = await warehousesService.create({
     name: 'Chennai South Hub',
     address: 'OMR, Sholinganallur, Chennai, Tamil Nadu',
-    lat: 12.8996,
-    lng: 80.2269,
+    lat: 12.8996 as any,
+    lng: 80.2269 as any,
     processingTimeHours: 24,
     isActive: true,
   });

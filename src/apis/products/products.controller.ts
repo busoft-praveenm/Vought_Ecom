@@ -1,5 +1,7 @@
 import { Controller, Get, Post, Patch, Delete, Body, Injectable, Param, Query, UseGuards, UseInterceptors, Req } from "@nestjs/common";
 import { ProductsService } from "./products.service";
+import { CreateProductDto } from "./dto/create-product.dto";
+import { UpdateProductDto } from "./dto/update-product.dto";
 import { FirebaseAuthGuard } from "@/guards/firebase.auth.guard";
 import { RolesGuard } from "@/guards/roles.guard";
 import { Roles } from "@/decorators/roles.decorator";
@@ -54,7 +56,7 @@ export class ProductsController {
   @Roles('admin')
   @SwaggerCreateProduct()
   @Post()
-  async createProduct(@Body() createProductDto: any) {
+  async createProduct(@Body() createProductDto: CreateProductDto) {
     return this.productsService.createProduct(createProductDto);
   }
 
@@ -62,7 +64,7 @@ export class ProductsController {
   @Roles('admin')
   @SwaggerUpdateProduct()
   @Patch(':id')
-  async updateProduct(@Param('id') id: string, @Body() updateProductDto: any) {
+  async updateProduct(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
     return this.productsService.updateProduct(Number(id), updateProductDto);
   }
 

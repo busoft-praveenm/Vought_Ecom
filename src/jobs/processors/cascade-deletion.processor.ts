@@ -1,13 +1,13 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Job } from 'bullmq';
 import { Logger } from '@nestjs/common';
-import { DataSource } from 'typeorm';
+import { PrismaService } from '@/prisma/prisma.service';
 
 @Processor('cascade-deletion')
 export class CascadeDeletionProcessor extends WorkerHost {
   private readonly logger = new Logger(CascadeDeletionProcessor.name);
 
-  constructor(private readonly dataSource: DataSource) {
+  constructor(private readonly prisma: PrismaService) {
     super();
   }
 
@@ -18,12 +18,10 @@ export class CascadeDeletionProcessor extends WorkerHost {
 
     try {
       if (entityType === 'brand') {
-        await this.dataSource
-          .createQueryBuilder()
-          .update('tbl_products')
-          .set({ isDeleted: true })
-          .where('brandId = :id', { id: entityId })
-          .execute();
+        await this.prisma.productsDb.updateMany({
+          where: { brandId: entityId },
+          data: { isDeleted: true }
+        });
         this.logger.log(`Successfully cascaded soft-delete to products for brand ${entityId}`);
       } else if (entityType === 'category') {
         // We do not delete products if they belong to multiple categories,

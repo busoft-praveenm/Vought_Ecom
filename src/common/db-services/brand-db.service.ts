@@ -1,29 +1,29 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
-import { BrandDb } from "../entities/tbl_brand.entity";
+import { PrismaService } from "../../prisma/prisma.service";
+import { BrandDb } from "@prisma/client";
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 
 @Injectable()
 export class BrandDbService {
   constructor(
-    @InjectRepository(BrandDb)
-    private readonly brandRepo: Repository<BrandDb>,
+    private readonly prisma: PrismaService,
     @InjectQueue('cascade-deletion') private cascadeQueue: Queue
   ) {}
 
   async findAll(page = 1, limit = 10, isAdmin = false) {
-    const queryBuilder = this.brandRepo.createQueryBuilder('brand')
-      .orderBy('brand.createdAt', 'DESC')
-      .skip((page - 1) * limit)
-      .take(limit);
+    const whereCondition = isAdmin ? {} : { isActive: true };
+    const skip = (page - 1) * limit;
 
-    if (!isAdmin) {
-      queryBuilder.where('brand.isActive = :isActive', { isActive: true });
-    }
-
-    const [brands, total] = await queryBuilder.getManyAndCount();
+    const [brands, total] = await Promise.all([
+      this.prisma.brandDb.findMany({
+        where: whereCondition,
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' }
+      }),
+      this.prisma.brandDb.count({ where: whereCondition })
+    ]);
 
     return {
       results: brands,
@@ -37,32 +37,49 @@ export class BrandDbService {
   }
 
   async findById(id: number): Promise<BrandDb> {
-    const brand = await this.brandRepo.findOne({ where: { id, isActive: true } });
+    const brand = await this.prisma.brandDb.findFirst({ where: { id, isActive: true } });
     if (!brand) throw new NotFoundException('Brand not found');
     return brand;
   }
 
   async getRandomBrands(limit: number = 6): Promise<BrandDb[]> {
-    return this.brandRepo
-      .createQueryBuilder('brand')
-      .where('brand.isActive = :isActive', { isActive: true })
-      .orderBy('RAND()')
-      .take(limit)
-      .getMany();
+    const activeBrands = await this.prisma.brandDb.findMany({
+      where: { isActive: true }
+    });
+    
+    // Shuffle array
+    for (let i = activeBrands.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [activeBrands[i], activeBrands[j]] = [activeBrands[j], activeBrands[i]];
+    }
+
+    return activeBrands.slice(0, limit);
   }
 
   async createBrand(name: string, description?: string, imageUrl?: string): Promise<BrandDb> {
-    const newBrand = this.brandRepo.create({ name, description, imageUrl });
-    return this.brandRepo.save(newBrand);
+    return this.prisma.brandDb.create({
+      data: { name, description, imageUrl }
+    });
   }
 
   async updateBrand(id: number, data: Partial<BrandDb>): Promise<BrandDb> {
-    await this.brandRepo.update(id, data);
+    await this.prisma.brandDb.update({
+      where: { id },
+      data: {
+        ...data,
+        updatedAt: new Date()
+      }
+    });
     return this.findById(id);
   }
 
   async deleteBrand(id: number): Promise<void> {
-    await this.brandRepo.softDelete(id);
+    await this.prisma.brandDb.update({
+      where: { id },
+      data: {
+        deletedAt: new Date()
+      }
+    });
     
     // Dispatch job to cascade soft delete to products
     await this.cascadeQueue.add('delete-products', { 

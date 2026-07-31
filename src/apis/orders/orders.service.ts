@@ -1,15 +1,7 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
-import { OrderDb, OrderStatus } from '@/common/entities/tbl_order.entity';
-import { OrderItemDb } from '@/common/entities/tbl_order_items.entity';
-import { CartDb } from '@/common/entities/tbl_cart.entity';
-import { CartItemDb } from '@/common/entities/tbl_cart_items.entity';
-import { ProductsDb } from '@/common/entities/tbl_products.entity';
-import { WarehouseDb } from '@/common/entities/tbl_warehouse.entity';
-import { WarehouseProductDb } from '@/common/entities/tbl_warehouse_products.entity';
-import { UserDb } from '@/common/entities/tbl_user.entity';
+import { PrismaService } from '@/prisma/prisma.service';
+import { OrderStatus, WarehouseDb } from '@prisma/client';
 import { EmailService } from '../email/email.service';
 import Razorpay from 'razorpay';
 import * as crypto from 'crypto';
@@ -19,22 +11,7 @@ export class OrdersService {
   private razorpay: Razorpay;
 
   constructor(
-    @InjectRepository(OrderDb)
-    private orderRepository: Repository<OrderDb>,
-    @InjectRepository(OrderItemDb)
-    private orderItemRepository: Repository<OrderItemDb>,
-    @InjectRepository(CartDb)
-    private cartRepository: Repository<CartDb>,
-    @InjectRepository(CartItemDb)
-    private cartItemRepository: Repository<CartItemDb>,
-    @InjectRepository(ProductsDb)
-    private productsRepository: Repository<ProductsDb>,
-    @InjectRepository(WarehouseDb)
-    private warehouseRepository: Repository<WarehouseDb>,
-    @InjectRepository(WarehouseProductDb)
-    private warehouseProductRepository: Repository<WarehouseProductDb>,
-    @InjectRepository(UserDb)
-    private userRepository: Repository<UserDb>,
+    private readonly prisma: PrismaService,
     private configService: ConfigService,
     private emailService: EmailService,
   ) {
@@ -46,9 +23,9 @@ export class OrdersService {
 
   async createOrder(userId: number) {
     // 1. Fetch user's cart
-    const cart = await this.cartRepository.findOne({
-      where: { user: { id: userId } },
-      relations: ['items', 'items.product'],
+    const cart = await this.prisma.cartDb.findUnique({
+      where: { userId },
+      include: { items: { include: { product: true } } },
     });
 
     if (!cart || cart.items.length === 0) {
@@ -64,7 +41,6 @@ export class OrdersService {
     const total = subtotal + tax;
 
     // 3. Create Razorpay order
-    // Razorpay amount is in smallest currency unit (e.g. paise for INR)
     const amountInPaise = Math.round(total * 100);
     const rpOrder = await this.razorpay.orders.create({
       amount: amountInPaise,
@@ -76,12 +52,12 @@ export class OrdersService {
     let nearestWarehouse: WarehouseDb | null = null;
     let minDistance = Infinity;
     
-    const user = await this.userRepository.findOne({ where: { id: userId }, relations: ['profile'] });
+    const user = await this.prisma.userDb.findUnique({ where: { id: userId }, include: { profile: true } });
     const userLat = user?.profile?.deliveryLat;
     const userLng = user?.profile?.deliveryLng;
 
     if (userLat && userLng) {
-      const warehouses = await this.warehouseRepository.find({ where: { isActive: true } });
+      const warehouses = await this.prisma.warehouseDb.findMany({ where: { isActive: true } });
       for (const w of warehouses) {
         if (w.lat && w.lng) {
           const dist = this.calculateDistance(Number(userLat), Number(userLng), Number(w.lat), Number(w.lng));
@@ -93,38 +69,41 @@ export class OrdersService {
       }
     }
 
-    // 5. Save to DB
-    const order = new OrderDb();
-    order.user = { id: userId } as any;
-    order.subtotal = subtotal;
-    order.tax = tax;
-    order.total = total;
-    order.status = OrderStatus.PENDING;
-    order.razorpayOrderId = rpOrder.id;
+    // 5. Save to DB using a transaction
+    const savedOrder = await this.prisma.$transaction(async (tx) => {
+      let expectedDeliveryDate: Date | null = null;
+      let distanceKm: number | null = null;
 
-    if (nearestWarehouse) {
-      order.warehouse = nearestWarehouse;
-      order.distanceKm = minDistance;
-      // Expected delivery: Delivery Hours = (Distance in km / 40 km/h) + Warehouse Processing Time
-      const deliveryHours = (minDistance / 40) + (nearestWarehouse.processingTimeHours || 24);
-      const deliveryDate = new Date();
-      deliveryDate.setHours(deliveryDate.getHours() + deliveryHours);
-      order.expectedDeliveryDate = deliveryDate;
-    }
+      if (nearestWarehouse) {
+        distanceKm = minDistance;
+        const deliveryHours = (minDistance / 40) + (nearestWarehouse.processingTimeHours || 24);
+        expectedDeliveryDate = new Date();
+        expectedDeliveryDate.setHours(expectedDeliveryDate.getHours() + deliveryHours);
+      }
 
-    const savedOrder = await this.orderRepository.save(order);
+      const newOrder = await tx.orderDb.create({
+        data: {
+          userId,
+          subtotal,
+          tax,
+          total,
+          status: OrderStatus.PENDING,
+          razorpayOrderId: rpOrder.id,
+          warehouseId: nearestWarehouse?.id,
+          distanceKm,
+          expectedDeliveryDate,
+          items: {
+            create: cart.items.map(item => ({
+              productId: item.productId,
+              quantity: item.quantity,
+              price: item.product.price
+            }))
+          }
+        }
+      });
 
-    // Save items
-    const orderItems: OrderItemDb[] = [];
-    for (const item of cart.items) {
-      const oi = new OrderItemDb();
-      oi.order = savedOrder;
-      oi.product = item.product;
-      oi.quantity = item.quantity;
-      oi.price = item.product.price;
-      orderItems.push(oi);
-    }
-    await this.orderItemRepository.save(orderItems);
+      return newOrder;
+    });
 
     return {
       orderId: savedOrder.id,
@@ -150,58 +129,52 @@ export class OrdersService {
       throw new BadRequestException('Invalid signature');
     }
 
-    const order = await this.orderRepository.findOne({
-      where: { razorpayOrderId, user: { id: userId } },
-      relations: ['items', 'items.product', 'warehouse', 'user', 'user.profile'],
+    const order = await this.prisma.orderDb.findFirst({
+      where: { razorpayOrderId, userId },
+      include: { items: { include: { product: true } }, warehouse: true, user: { include: { profile: true } } },
     });
 
     if (!order) {
       throw new NotFoundException('Order not found');
     }
 
-    order.status = OrderStatus.ORDER_PLACED;
-    order.razorpayPaymentId = razorpayPaymentId;
-    order.razorpaySignature = razorpaySignature;
-
-    await this.orderRepository.save(order);
+    const updatedOrder = await this.prisma.orderDb.update({
+      where: { id: order.id },
+      data: {
+        status: OrderStatus.ORDER_PLACED,
+        razorpayPaymentId,
+        razorpaySignature,
+        updatedAt: new Date()
+      },
+      include: { items: { include: { product: true } }, warehouse: true, user: { include: { profile: true } } }
+    });
     
-    // Queue confirmation email (fire-and-forget)
-    this.emailService.queueOrderConfirmation(order);
+    // Queue confirmation email
+    this.emailService.queueOrderConfirmation(updatedOrder as any);
 
-    // Decrement stock for purchased items
-    if (order.items) {
-      for (const item of order.items) {
-        if (item.product) {
-          // Decrement aggregate stock
-          await this.productsRepository.decrement(
-            { id: item.product.id },
-            'stock',
-            item.quantity
-          );
-          
-          // Decrement warehouse stock
-          if (order.warehouse) {
-            const wp = await this.warehouseProductRepository.findOne({
-              where: { warehouse: { id: order.warehouse.id }, product: { id: item.product.id } }
-            });
-            if (wp) {
-              await this.warehouseProductRepository.decrement(
-                { id: wp.id },
-                'quantity',
-                item.quantity
-              );
-            }
-          }
+    // Decrement stock
+    for (const item of order.items) {
+      if (item.product) {
+        await this.prisma.productsDb.update({
+          where: { id: item.productId },
+          data: { stock: { decrement: item.quantity } }
+        });
+        
+        if (order.warehouseId) {
+          await this.prisma.warehouseProductDb.updateMany({
+            where: { warehouseId: order.warehouseId, productId: item.productId },
+            data: { quantity: { decrement: item.quantity } }
+          });
         }
       }
     }
 
     // Empty the cart
-    const cart = await this.cartRepository.findOne({
-      where: { user: { id: userId } },
+    const cart = await this.prisma.cartDb.findUnique({
+      where: { userId },
     });
     if (cart) {
-      await this.cartItemRepository.delete({ cart: { id: cart.id } });
+      await this.prisma.cartItemDb.deleteMany({ where: { cartId: cart.id } });
     }
 
     return { success: true, orderId: order.id };
@@ -209,48 +182,51 @@ export class OrdersService {
 
   async getOrders(userId: number, isAdmin: boolean) {
     if (isAdmin) {
-      return this.orderRepository.find({
-        relations: ['user', 'items', 'items.product', 'user.profile'],
-        order: { createdAt: 'DESC' },
+      return this.prisma.orderDb.findMany({
+        include: { user: { include: { profile: true } }, items: { include: { product: true } } },
+        orderBy: { createdAt: 'desc' },
       });
     } else {
-      return this.orderRepository.find({
-        where: { user: { id: userId } },
-        relations: ['items', 'items.product', 'warehouse'],
-        order: { createdAt: 'DESC' },
+      return this.prisma.orderDb.findMany({
+        where: { userId },
+        include: { items: { include: { product: true } }, warehouse: true },
+        orderBy: { createdAt: 'desc' },
       });
     }
   }
 
   async updateStatus(orderId: number, status: OrderStatus) {
-    const order = await this.orderRepository.findOne({ 
+    const order = await this.prisma.orderDb.findUnique({ 
       where: { id: orderId },
-      relations: ['user', 'user.profile']
+      include: { user: { include: { profile: true } } }
     });
     if (!order) {
       throw new NotFoundException('Order not found');
     }
     
-    order.status = status;
-    await this.orderRepository.save(order);
+    const updatedOrder = await this.prisma.orderDb.update({
+      where: { id: orderId },
+      data: { status, updatedAt: new Date() },
+      include: { user: { include: { profile: true } } }
+    });
     
     if (status === OrderStatus.OUT_FOR_DELIVERY) {
-      this.emailService.queueOrderOutForDelivery(order);
+      this.emailService.queueOrderOutForDelivery(updatedOrder as any);
     }
     
-    return { success: true, orderId: order.id, status: order.status };
+    return { success: true, orderId: updatedOrder.id, status: updatedOrder.status };
   }
 
   async getDeliveryEstimate(userId: number) {
     let nearestWarehouse: WarehouseDb | null = null;
     let minDistance = Infinity;
     
-    const user = await this.userRepository.findOne({ where: { id: userId }, relations: ['profile'] });
+    const user = await this.prisma.userDb.findUnique({ where: { id: userId }, include: { profile: true } });
     const userLat = user?.profile?.deliveryLat;
     const userLng = user?.profile?.deliveryLng;
 
     if (userLat && userLng) {
-      const warehouses = await this.warehouseRepository.find({ where: { isActive: true } });
+      const warehouses = await this.prisma.warehouseDb.findMany({ where: { isActive: true } });
       for (const w of warehouses) {
         if (w.lat && w.lng) {
           const dist = this.calculateDistance(Number(userLat), Number(userLng), Number(w.lat), Number(w.lng));
@@ -273,7 +249,7 @@ export class OrdersService {
   }
 
   private calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-    const R = 6371; // Radius of the earth in km
+    const R = 6371;
     const dLat = this.deg2rad(lat2 - lat1);
     const dLon = this.deg2rad(lon2 - lon1);
     const a =
@@ -281,7 +257,7 @@ export class OrdersService {
       Math.cos(this.deg2rad(lat1)) * Math.cos(this.deg2rad(lat2)) *
       Math.sin(dLon / 2) * Math.sin(dLon / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c; // Distance in km
+    return R * c;
   }
 
   private deg2rad(deg: number): number {

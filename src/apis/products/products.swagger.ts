@@ -1,5 +1,7 @@
 import { applyDecorators } from '@nestjs/common';
 import { ApiOperation, ApiQuery, ApiResponse, ApiParam, ApiBody } from '@nestjs/swagger';
+import { CreateProductDto } from './dto/create-product.dto';
+import { UpdateProductDto } from './dto/update-product.dto';
 
 export function SwaggerGetProducts() {
   return applyDecorators(
@@ -33,7 +35,7 @@ export function SwaggerGetProduct() {
 export function SwaggerCreateProduct() {
   return applyDecorators(
     ApiOperation({ summary: 'Create a new product' }),
-    ApiBody({ description: 'Product data' }),
+    ApiBody({ description: 'Product data', type: CreateProductDto }),
     ApiResponse({ status: 201, description: 'Product created successfully.' }),
     ApiResponse({ status: 401, description: 'Unauthorized.' }),
     ApiResponse({ status: 403, description: 'Forbidden. Requires admin role.' })
@@ -44,7 +46,7 @@ export function SwaggerUpdateProduct() {
   return applyDecorators(
     ApiOperation({ summary: 'Update a product' }),
     ApiParam({ name: 'id', required: true, type: String }),
-    ApiBody({ description: 'Product data to update' }),
+    ApiBody({ description: 'Product data to update', type: UpdateProductDto }),
     ApiResponse({ status: 200, description: 'Product updated successfully.' }),
     ApiResponse({ status: 401, description: 'Unauthorized.' }),
     ApiResponse({ status: 403, description: 'Forbidden. Requires admin role.' })

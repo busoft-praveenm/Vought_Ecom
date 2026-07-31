@@ -1,5 +1,7 @@
 import { applyDecorators } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiParam, ApiBody } from '@nestjs/swagger';
+import { VerifyPaymentDto } from './dto/verify-payment.dto';
+import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 
 export function SwaggerCreateOrder() {
   return applyDecorators(
@@ -13,7 +15,7 @@ export function SwaggerCreateOrder() {
 export function SwaggerVerifyPayment() {
   return applyDecorators(
     ApiOperation({ summary: 'Verify Razorpay payment and complete order' }),
-    ApiBody({ description: 'Razorpay payment details', schema: { type: 'object', properties: { razorpay_order_id: { type: 'string' }, razorpay_payment_id: { type: 'string' }, razorpay_signature: { type: 'string' } } } }),
+    ApiBody({ description: 'Razorpay payment details', type: VerifyPaymentDto }),
     ApiResponse({ status: 201, description: 'Payment verified successfully. Order status updated.' }),
     ApiResponse({ status: 400, description: 'Invalid signature.' }),
     ApiResponse({ status: 401, description: 'Unauthorized.' })
@@ -40,7 +42,7 @@ export function SwaggerUpdateOrderStatus() {
   return applyDecorators(
     ApiOperation({ summary: 'Update order status' }),
     ApiParam({ name: 'id', required: true, type: String }),
-    ApiBody({ description: 'New order status', schema: { type: 'object', properties: { status: { type: 'string' } } } }),
+    ApiBody({ description: 'New order status', type: UpdateOrderStatusDto }),
     ApiResponse({ status: 200, description: 'Order status updated successfully.' }),
     ApiResponse({ status: 401, description: 'Unauthorized.' }),
     ApiResponse({ status: 403, description: 'Forbidden. Requires admin role.' })

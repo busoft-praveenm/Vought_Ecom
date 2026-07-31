@@ -1,9 +1,6 @@
 import { Injectable, NotFoundException, ConflictException } from "@nestjs/common";
-import { InjectRepository } from "@nestjs/typeorm";
-import { Repository } from "typeorm";
-import { ProductReviewDb } from "../entities/tbl_product_review.entity";
-import { ProductsDb } from "../entities/tbl_products.entity";
-import { UserDb } from "../entities/tbl_user.entity";
+import { PrismaService } from "../../prisma/prisma.service";
+import { ProductReviewDb } from "@prisma/client";
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
 
@@ -11,30 +8,25 @@ import { Queue } from 'bullmq';
 export class ReviewsDbService {
 
   constructor(
-    @InjectRepository(ProductReviewDb)
-    private readonly reviewRepo: Repository<ProductReviewDb>,
-    @InjectRepository(ProductsDb)
-    private readonly productRepo: Repository<ProductsDb>,
-    @InjectRepository(UserDb)
-    private readonly userRepo: Repository<UserDb>,
+    private readonly prisma: PrismaService,
     @InjectQueue('review-aggregation') private reviewQueue: Queue
   ){}
 
   async createReview(productId: number, userUid: string, rating: number, reviewText?: string): Promise<ProductReviewDb> {
-    const product = await this.productRepo.findOne({ where: { id: productId } });
+    const product = await this.prisma.productsDb.findUnique({ where: { id: productId } });
     if (!product) {
       throw new NotFoundException('Product not found');
     }
 
-    const user = await this.userRepo.findOne({ where: { firebaseUid: userUid } });
+    const user = await this.prisma.userDb.findUnique({ where: { firebaseUid: userUid } });
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
-    const existingReview = await this.reviewRepo.findOne({
+    const existingReview = await this.prisma.productReviewDb.findFirst({
       where: {
-        product: { id: productId },
-        user: { id: user.id }
+        productId: productId,
+        userId: user.id
       }
     });
 
@@ -42,14 +34,14 @@ export class ReviewsDbService {
       throw new ConflictException('User has already reviewed this product');
     }
 
-    const review = this.reviewRepo.create({
-      rating,
-      reviewText,
-      product,
-      user
+    const review = await this.prisma.productReviewDb.create({
+      data: {
+        rating,
+        reviewText,
+        productId,
+        userId: user.id
+      }
     });
-
-    await this.reviewRepo.save(review);
 
     // Dispatch job to calculate new average
     await this.reviewQueue.add('aggregate-rating', { 

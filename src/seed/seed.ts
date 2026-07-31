@@ -1,22 +1,17 @@
-import mysql from 'mysql2/promise';
+import { PrismaClient } from '@prisma/client';
+import { v4 as uuidv4 } from 'uuid';
+
+const prisma = new PrismaClient();
 
 async function seedProducts() {
-  const connection = await mysql.createConnection({
-    host: 'localhost',
-    user: 'agira',
-    password: 'Agira@123',
-    database: 'vought_ecom'
-  });
-
   const catImage = 'https://as1.ftcdn.net/v2/jpg/03/59/09/04/1000_F_359090423_7kA3WC9HnDEf1I9dx4ccGFhhO90vmzhk.jpg';
   const brandImage = 'https://static.vecteezy.com/system/resources/previews/026/398/902/non_2x/brand-and-trademark-concept-increasing-value-of-goods-and-products-marketing-that-shows-unique-identity-of-product-advertising-business-with-mark-or-logo-design-that-expresses-identity-and-quality-free-photo.jpg';
   const productImage = 'https://xelltechnology.com/wp-content/uploads/2022/04/dummy3.jpg';
 
   console.log('Clearing existing data...');
-  await connection.execute('DELETE FROM product_categories');
-  await connection.execute('DELETE FROM tbl_products');
-  await connection.execute('DELETE FROM tbl_brand');
-  await connection.execute('DELETE FROM tbl_category');
+  await prisma.productsDb.deleteMany();
+  await prisma.brandDb.deleteMany();
+  await prisma.categoryDb.deleteMany();
 
   console.log('Seeding brands...');
   const brandIds: number[] = [];
@@ -26,11 +21,15 @@ async function seedProducts() {
     'Stormfront Tech', 'Black Noir Knives', 'Lamplighter Torches', 'Eagle the Archer Bows', 'Ashley PR'
   ];
   for (const name of brandNames) {
-    const [result]: any = await connection.execute(
-      `INSERT INTO tbl_brand (name, description, image_url, is_active, created_at, updated_at) VALUES (?, ?, ?, 1, NOW(), NOW())`,
-      [name, `Premium products from ${name}`, brandImage]
-    );
-    brandIds.push(result.insertId);
+    const brand = await prisma.brandDb.create({
+      data: {
+        name,
+        description: `Premium products from ${name}`,
+        imageUrl: brandImage,
+        isActive: true,
+      }
+    });
+    brandIds.push(brand.id);
   }
 
   console.log('Seeding categories...');
@@ -42,11 +41,15 @@ async function seedProducts() {
     'Office Supplies', 'Musical Instruments', 'Software', 'Industrial', 'Handmade'
   ];
   for (const name of catNames) {
-    const [result]: any = await connection.execute(
-      `INSERT INTO tbl_category (name, description, image_url, is_active, created_at, updated_at) VALUES (?, ?, ?, 1, NOW(), NOW())`,
-      [name, `Awesome ${name}`, catImage]
-    );
-    catIds.push(result.insertId);
+    const cat = await prisma.categoryDb.create({
+      data: {
+        name,
+        description: `Awesome ${name}`,
+        imageUrl: catImage,
+        isActive: true,
+      }
+    });
+    catIds.push(cat.id);
   }
 
   console.log('Seeding 50 products...');
@@ -59,29 +62,34 @@ async function seedProducts() {
     const productUid = `uid-${Date.now()}-${i}`;
     const brandId = brandIds[i % brandIds.length];
 
-    const [result]: any = await connection.execute(
-      `INSERT INTO tbl_products (name, description, price, stock, sku, product_uid, image_url, brand_id, is_deleted, created_at, updated_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 0, NOW(), NOW())`,
-      [name, description, price, stock, sku, productUid, productImage, brandId]
-    );
-    
-    const productId = result.insertId;
-
-    // Assign categories
-    const numCats = i <= 10 ? 2 : 1; // First 10 products get 2 categories
+    const numCats = i <= 10 ? 2 : 1; 
     const shuffledCats = [...catIds].sort(() => 0.5 - Math.random());
-    const assignedCats = shuffledCats.slice(0, numCats);
+    const assignedCats = shuffledCats.slice(0, numCats).map(id => ({ id }));
 
-    for (const cId of assignedCats) {
-      await connection.execute(
-        `INSERT INTO product_categories (product_id, category_id) VALUES (?, ?)`,
-        [productId, cId]
-      );
-    }
+    await prisma.productsDb.create({
+      data: {
+        name,
+        description,
+        price,
+        stock,
+        sku,
+        productUid,
+        imageUrl: productImage,
+        brandId,
+        isDeleted: false,
+        categories: {
+          connect: assignedCats
+        }
+      }
+    });
   }
 
   console.log('Finished seeding database.');
-  await connection.end();
+  await prisma.$disconnect();
 }
 
-seedProducts().catch(console.error);
+seedProducts().catch(e => {
+  console.error(e);
+  prisma.$disconnect();
+  process.exit(1);
+});

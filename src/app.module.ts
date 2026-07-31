@@ -2,8 +2,7 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { databaseConfig } from './config/database.config';
-import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm';
+import { PrismaModule } from './prisma/prisma.module';
 import { DbServicesModule } from './common/db-services/db-services.module';
 import { AuthModule } from './apis/auth/auth.module';
 import { ProductsModule } from './apis/products/products.module';
@@ -24,15 +23,8 @@ import { EmailModule } from './apis/email/email.module';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [
-        databaseConfig
-      ]
     }),
-    TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => configService.get<TypeOrmModuleOptions>('database')!,
-      inject:[ConfigService],
-    }),
+    PrismaModule,
     CacheModule.registerAsync({
       isGlobal: true,
       imports: [ConfigModule],

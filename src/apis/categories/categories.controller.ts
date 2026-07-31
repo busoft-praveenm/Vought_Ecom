@@ -1,5 +1,7 @@
 import { Controller, Get, Post, Patch, Delete, Body, Param, UseGuards, Query } from "@nestjs/common";
 import { CategoryDbService } from "@/common/db-services/category-db.service";
+import { CreateCategoryDto } from "./dto/create-category.dto";
+import { UpdateCategoryDto } from "./dto/update-category.dto";
 import { FirebaseAuthGuard } from "@/guards/firebase.auth.guard";
 import { RolesGuard } from "@/guards/roles.guard";
 import { Roles } from "@/decorators/roles.decorator";
@@ -42,16 +44,16 @@ export class CategoriesController {
   @Roles('admin')
   @SwaggerCreateCategory()
   @Post()
-  async createCategory(@Body() body: { name: string; description?: string; imageUrl?: string }) {
-    return this.categoryDbService.createCategory(body.name, body.description, body.imageUrl);
+  async createCategory(@Body() createCategoryDto: CreateCategoryDto) {
+    return this.categoryDbService.createCategory(createCategoryDto.name, createCategoryDto.description, createCategoryDto.imageUrl);
   }
 
   @UseGuards(FirebaseAuthGuard, RolesGuard)
   @Roles('admin')
   @SwaggerUpdateCategory()
   @Patch(':id')
-  async updateCategory(@Param('id') id: string, @Body() body: any) {
-    return this.categoryDbService.updateCategory(Number(id), body);
+  async updateCategory(@Param('id') id: string, @Body() updateCategoryDto: UpdateCategoryDto) {
+    return this.categoryDbService.updateCategory(Number(id), updateCategoryDto);
   }
 
   @UseGuards(FirebaseAuthGuard, RolesGuard)

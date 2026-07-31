@@ -1,70 +1,78 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { WarehouseDb } from '@/common/entities/tbl_warehouse.entity';
-import { WarehouseProductDb } from '@/common/entities/tbl_warehouse_products.entity';
-import { ProductsDb } from '@/common/entities/tbl_products.entity';
+import { PrismaService } from '@/prisma/prisma.service';
+import { WarehouseDb } from '@prisma/client';
 
 @Injectable()
 export class WarehousesService {
-  constructor(
-    @InjectRepository(WarehouseDb)
-    private readonly warehouseRepo: Repository<WarehouseDb>,
-    @InjectRepository(WarehouseProductDb)
-    private readonly warehouseProductRepo: Repository<WarehouseProductDb>,
-    @InjectRepository(ProductsDb)
-    private readonly productRepo: Repository<ProductsDb>,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async findAll() {
-    return this.warehouseRepo.find();
+    return this.prisma.warehouseDb.findMany();
   }
 
   async findOne(id: number) {
-    const warehouse = await this.warehouseRepo.findOne({ where: { id } });
+    const warehouse = await this.prisma.warehouseDb.findUnique({ where: { id } });
     if (!warehouse) throw new NotFoundException('Warehouse not found');
     return warehouse;
   }
 
   async create(data: Partial<WarehouseDb>) {
-    const warehouse = this.warehouseRepo.create(data);
-    return this.warehouseRepo.save(warehouse);
+    return this.prisma.warehouseDb.create({
+      data: {
+        name: data.name!,
+        address: data.address,
+        lat: data.lat!,
+        lng: data.lng!,
+        processingTimeHours: data.processingTimeHours ?? 24,
+        isActive: data.isActive ?? true
+      }
+    });
   }
 
   async update(id: number, data: Partial<WarehouseDb>) {
-    await this.warehouseRepo.update(id, data);
+    await this.prisma.warehouseDb.update({
+      where: { id },
+      data: {
+        ...data,
+        updatedAt: new Date()
+      }
+    });
     return this.findOne(id);
   }
 
   async delete(id: number) {
-    await this.warehouseRepo.delete(id);
+    await this.prisma.warehouseDb.delete({ where: { id } });
     return { success: true };
   }
 
   // --- Warehouse Inventory Management ---
 
   async getInventory(warehouseId: number) {
-    return this.warehouseProductRepo.find({
-      where: { warehouse: { id: warehouseId } },
-      relations: ['product'],
+    return this.prisma.warehouseProductDb.findMany({
+      where: { warehouseId },
+      include: { product: true },
     });
   }
 
   async setInventory(warehouseId: number, productId: number, quantity: number) {
-    let wp = await this.warehouseProductRepo.findOne({
-      where: { warehouse: { id: warehouseId }, product: { id: productId } },
+    let wp = await this.prisma.warehouseProductDb.findFirst({
+      where: { warehouseId, productId },
     });
 
     if (wp) {
-      wp.quantity = quantity;
+      wp = await this.prisma.warehouseProductDb.update({
+        where: { id: wp.id },
+        data: { quantity, updatedAt: new Date() }
+      });
     } else {
-      wp = this.warehouseProductRepo.create({
-        warehouse: { id: warehouseId } as WarehouseDb,
-        product: { id: productId } as ProductsDb,
-        quantity,
+      wp = await this.prisma.warehouseProductDb.create({
+        data: {
+          warehouseId,
+          productId,
+          quantity,
+        }
       });
     }
-    await this.warehouseProductRepo.save(wp);
 
     // Update aggregate stock in tbl_products
     await this.updateAggregateStock(productId);
@@ -73,11 +81,15 @@ export class WarehousesService {
   }
 
   private async updateAggregateStock(productId: number) {
-    const allWarehouseProducts = await this.warehouseProductRepo.find({
-      where: { product: { id: productId } },
+    const allWarehouseProducts = await this.prisma.warehouseProductDb.findMany({
+      where: { productId },
     });
     
     const totalStock = allWarehouseProducts.reduce((sum, wp) => sum + wp.quantity, 0);
-    await this.productRepo.update(productId, { stock: totalStock });
+    
+    await this.prisma.productsDb.update({
+      where: { id: productId },
+      data: { stock: totalStock }
+    });
   }
 }

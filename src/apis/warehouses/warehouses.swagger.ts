@@ -1,5 +1,8 @@
 import { applyDecorators } from '@nestjs/common';
 import { ApiOperation, ApiResponse, ApiParam, ApiBody } from '@nestjs/swagger';
+import { CreateWarehouseDto } from './dto/create-warehouse.dto';
+import { UpdateWarehouseDto } from './dto/update-warehouse.dto';
+import { SetInventoryDto } from './dto/set-inventory.dto';
 
 export function SwaggerGetWarehouses() {
   return applyDecorators(
@@ -20,7 +23,7 @@ export function SwaggerGetWarehouse() {
 export function SwaggerCreateWarehouse() {
   return applyDecorators(
     ApiOperation({ summary: 'Create a new warehouse' }),
-    ApiBody({ description: 'Warehouse data' }),
+    ApiBody({ description: 'Warehouse data', type: CreateWarehouseDto }),
     ApiResponse({ status: 201, description: 'Warehouse created successfully.' }),
     ApiResponse({ status: 401, description: 'Unauthorized.' }),
     ApiResponse({ status: 403, description: 'Forbidden. Requires admin role.' })
@@ -31,7 +34,7 @@ export function SwaggerUpdateWarehouse() {
   return applyDecorators(
     ApiOperation({ summary: 'Update a warehouse' }),
     ApiParam({ name: 'id', required: true, type: String }),
-    ApiBody({ description: 'Warehouse data to update' }),
+    ApiBody({ description: 'Warehouse data to update', type: UpdateWarehouseDto }),
     ApiResponse({ status: 200, description: 'Warehouse updated successfully.' }),
     ApiResponse({ status: 401, description: 'Unauthorized.' }),
     ApiResponse({ status: 403, description: 'Forbidden. Requires admin role.' })
@@ -62,7 +65,7 @@ export function SwaggerSetInventory() {
   return applyDecorators(
     ApiOperation({ summary: 'Set inventory quantity for a product in a warehouse' }),
     ApiParam({ name: 'id', required: true, type: String }),
-    ApiBody({ description: 'Product ID and Quantity' }),
+    ApiBody({ description: 'Product ID and Quantity', type: SetInventoryDto }),
     ApiResponse({ status: 201, description: 'Inventory set successfully.' }),
     ApiResponse({ status: 401, description: 'Unauthorized.' }),
     ApiResponse({ status: 403, description: 'Forbidden. Requires admin role.' })
