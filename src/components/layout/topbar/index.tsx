@@ -1,11 +1,11 @@
 "use client";
 
 import React from "react";
-import { useRouter } from "next/navigation";
-import { Search, Bell, Settings, User, LogOut, ShoppingCart, Menu } from "lucide-react";
+import { Search, Bell, Settings, User, LogOut, ShoppingCart, Menu, Globe } from "lucide-react";
 import { Input } from "@/components/input";
 import { Button } from "@/components/button";
-import Link from "next/link";
+import { useRouter, usePathname, Link } from "@/i18n/routing";
+import { useTranslations } from "next-intl";
 import { useSidebar } from "@/components/layout/client-layout";
 import {
   DropdownMenu,
@@ -18,8 +18,23 @@ import {
 } from "@/components/dropdown-menu";
 
 export const Topbar = ({ cartCount = 0 }: { cartCount?: number }) => {
+  const t = useTranslations("Topbar");
   const router = useRouter();
+  const pathname = usePathname();
   const { toggle, isOpen } = useSidebar();
+  const [lang, setLang] = React.useState('en');
+
+  React.useEffect(() => {
+    const match = document.cookie.match(new RegExp('(^| )NEXT_LOCALE=([^;]+)'));
+    if (match) {
+      setLang(match[2]);
+    }
+  }, []);
+
+  const changeLanguage = (newLang: string) => {
+    setLang(newLang);
+    router.replace(pathname, { locale: newLang });
+  };
 
   const handleLogout = async () => {
     try {
@@ -31,8 +46,10 @@ export const Topbar = ({ cartCount = 0 }: { cartCount?: number }) => {
     } catch (error) {
       console.error("Logout failed", error);
     } finally {
-      // Always redirect to login page after logout attempt
-      router.push("/login");
+      // Always force NEXT_LOCALE to 'en' on logout
+      document.cookie = "NEXT_LOCALE=en; path=/; expires=Fri, 31 Dec 9999 23:59:59 GMT";
+      // Redirect to login page in English
+      router.replace("/login", { locale: 'en' });
     }
   };
 
@@ -79,14 +96,14 @@ export const Topbar = ({ cartCount = 0 }: { cartCount?: number }) => {
             }
           `}} />
           <span className="text-xl font-bold tracking-tight animate-logo-shimmer">
-            Vought India
+            {t('VoughtIndia')}
           </span>
         </div>
         <form className="hidden sm:flex relative">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-zinc-500" />
           <Input
             type="search"
-            placeholder="Search products..."
+            placeholder={t('SearchPlaceholder')}
             className="w-full appearance-none bg-zinc-900 border-zinc-800 text-zinc-200 placeholder:text-zinc-500 pl-8 shadow-none md:w-2/3 lg:w-[300px] rounded-full transition-all hover:bg-zinc-800 focus:bg-zinc-900 focus:border-zinc-700 focus:ring-1 focus:ring-zinc-700"
           />
         </form>
@@ -109,28 +126,49 @@ export const Topbar = ({ cartCount = 0 }: { cartCount?: number }) => {
         </Button>
         <Button variant="ghost" size="icon" className="rounded-full text-zinc-400 hover:text-zinc-50 hover:bg-zinc-800/50">
           <Settings className="h-5 w-5" />
-          <span className="sr-only">Settings</span>
+          <span className="sr-only">{t('Settings')}</span>
         </Button>
 
         <div className="ml-2 flex items-center gap-2">
           <DropdownMenu>
             <DropdownMenuTrigger render={
               <Button variant="ghost" size="icon" className="rounded-full text-zinc-400 hover:text-zinc-50 hover:bg-zinc-800/50 data-[state=open]:bg-zinc-800/50 data-[state=open]:text-zinc-50 cursor-pointer">
+                <Globe className="h-5 w-5" />
+                <span className="sr-only">{t('Language')}</span>
+              </Button>
+            } />
+            <DropdownMenuContent align="end" className="w-32">
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>{t('Language')}</DropdownMenuLabel>
+              </DropdownMenuGroup>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => changeLanguage('en')} className="cursor-pointer">
+                {lang === 'en' ? '✓ English' : 'English'}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => changeLanguage('ta')} className="cursor-pointer">
+                {lang === 'ta' ? '✓ Tamil' : 'Tamil'}
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <DropdownMenu>
+            <DropdownMenuTrigger render={
+              <Button variant="ghost" size="icon" className="rounded-full text-zinc-400 hover:text-zinc-50 hover:bg-zinc-800/50 data-[state=open]:bg-zinc-800/50 data-[state=open]:text-zinc-50 cursor-pointer">
                 <User className="h-5 w-5" />
-                <span className="sr-only">User Profile</span>
+                <span className="sr-only">{t('Profile')}</span>
               </Button>
             } />
             <DropdownMenuContent align="end" className="w-48">
               <DropdownMenuGroup>
-                <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                <DropdownMenuLabel>{t('MyAccount')}</DropdownMenuLabel>
               </DropdownMenuGroup>
               <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => router.push('/dashboard/profile')} className="cursor-pointer">Profile</DropdownMenuItem>
-              <DropdownMenuItem>Settings</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => router.push('/dashboard/profile')} className="cursor-pointer">{t('Profile')}</DropdownMenuItem>
+              <DropdownMenuItem>{t('Settings')}</DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:bg-destructive/10 cursor-pointer">
                 <LogOut className="mr-2 h-4 w-4" />
-                <span>Log out</span>
+                <span>{t('LogOut')}</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

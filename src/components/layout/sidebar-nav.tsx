@@ -1,11 +1,12 @@
 "use client";
 
 import React from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { Link, usePathname } from "@/i18n/routing";
+import { useTranslations } from "next-intl";
 import { Activity, LayoutGrid, ShoppingCart, Users, Package, Bookmark, Receipt, Building } from "lucide-react";
 
 export function SidebarNav({ isAdmin = false }: { isAdmin?: boolean }) {
+  const t = useTranslations("Sidebar");
   const pathname = usePathname();
 
   const isProducts = pathname.startsWith("/dashboard/products") && !pathname.startsWith("/dashboard/admin/products");
@@ -27,7 +28,7 @@ export function SidebarNav({ isAdmin = false }: { isAdmin?: boolean }) {
           }`}
         >
           <Activity className={`h-5 w-5 ${isOverview ? "text-zinc-50" : ""}`} />
-          Overview
+          {t('Overview')}
         </Link>
       )}
 
@@ -40,7 +41,7 @@ export function SidebarNav({ isAdmin = false }: { isAdmin?: boolean }) {
         }`}
       >
         <ShoppingCart className={`h-5 w-5 ${isProducts ? "text-zinc-50" : ""}`} />
-        Products
+        {t('Products')}
       </Link>
       <Link 
         href="/dashboard/orders" 
@@ -51,7 +52,7 @@ export function SidebarNav({ isAdmin = false }: { isAdmin?: boolean }) {
         }`}
       >
         <Receipt className={`h-5 w-5 ${isOrders ? "text-zinc-50" : ""}`} />
-        Orders
+        {t('Orders')}
       </Link>
       {isAdmin && (
         <>
@@ -64,7 +65,7 @@ export function SidebarNav({ isAdmin = false }: { isAdmin?: boolean }) {
             }`}
           >
             <LayoutGrid className={`h-5 w-5 ${pathname.startsWith("/dashboard/admin/categories") ? "text-zinc-50" : ""}`} />
-            Categories
+            {t('Categories')}
           </Link>
           <Link 
             href="/dashboard/admin/brands" 
@@ -75,7 +76,7 @@ export function SidebarNav({ isAdmin = false }: { isAdmin?: boolean }) {
             }`}
           >
             <Bookmark className={`h-5 w-5 ${pathname.startsWith("/dashboard/admin/brands") ? "text-zinc-50" : ""}`} />
-            Brands
+            {t('Brands')}
           </Link>
           <Link 
             href="/dashboard/admin/customers" 
@@ -86,7 +87,7 @@ export function SidebarNav({ isAdmin = false }: { isAdmin?: boolean }) {
             }`}
           >
             <Users className={`h-5 w-5 ${isAdminCustomers ? "text-zinc-50" : ""}`} />
-            Customers
+            {t('Customers')}
           </Link>
           <Link 
             href="/dashboard/admin/products" 
@@ -97,7 +98,7 @@ export function SidebarNav({ isAdmin = false }: { isAdmin?: boolean }) {
             }`}
           >
             <Package className={`h-5 w-5 ${isAdminProducts ? "text-zinc-50" : ""}`} />
-            Products Inventory
+            {t('ProductsInventory')}
           </Link>
           <Link 
             href="/dashboard/admin/warehouses" 
@@ -108,7 +109,7 @@ export function SidebarNav({ isAdmin = false }: { isAdmin?: boolean }) {
             }`}
           >
             <Building className={`h-5 w-5 ${isWarehouses ? "text-zinc-50" : ""}`} />
-            Warehouses
+            {t('Warehouses')}
           </Link>
         </>
       )}

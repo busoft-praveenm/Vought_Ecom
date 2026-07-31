@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from '@/i18n/routing';
 import { toast } from 'sonner';
 
 export function AutoLogout({ exp }: { exp: number | undefined }) {
@@ -42,8 +42,9 @@ export function AutoLogout({ exp }: { exp: number | undefined }) {
     } catch (error) {
       console.error('Auto logout fetch failed', error);
     } finally {
-      // Always redirect to login
-      router.push('/login');
+      // Always redirect to login in English
+      document.cookie = "NEXT_LOCALE=en; path=/; expires=Fri, 31 Dec 9999 23:59:59 GMT";
+      router.replace('/login', { locale: 'en' });
     }
   };
 

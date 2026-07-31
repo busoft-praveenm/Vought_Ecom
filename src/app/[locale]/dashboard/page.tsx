@@ -1,4 +1,5 @@
 import React from "react";
+import { getTranslations } from "next-intl/server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/card";
 import { Activity, CreditCard, DollarSign, Users } from "lucide-react";
 import { cookies } from "next/headers";
@@ -92,6 +93,7 @@ function AdminOverview() {
 }
 
 async function UserLanding() {
+  const t = await getTranslations("Dashboard");
   const [categories, brands, products] = await Promise.all([
     getRandomCategoriesAction(20),
     getRandomBrandsAction(15),
@@ -120,9 +122,9 @@ async function UserLanding() {
       {brandItems.length > 0 && (
         <section>
           <div className="text-center mb-10 max-w-6xl mx-auto">
-            <h2 className="text-4xl font-extrabold tracking-tight mb-4">Featured Brands</h2>
+            <h2 className="text-4xl font-extrabold tracking-tight mb-4">{t('FeaturedBrands')}</h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Discover the top brands that make our collection so special.
+              {t('FeaturedBrandsDesc')}
             </p>
           </div>
           <div style={{ height: '600px', position: 'relative' }}>
@@ -134,9 +136,9 @@ async function UserLanding() {
       {/* Categories Section */}
       <section>
         <div className="text-center mb-10 max-w-6xl mx-auto">
-          <h2 className="text-4xl font-extrabold tracking-tight mb-4">Discover Categories</h2>
+          <h2 className="text-4xl font-extrabold tracking-tight mb-4">{t('DiscoverCategories')}</h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Explore our wide range of premium products tailored just for you. Find what you love in our curated collections.
+            {t('DiscoverCategoriesDesc')}
           </p>
         </div>
         <CategoryMasonry categories={categories} />
@@ -146,9 +148,9 @@ async function UserLanding() {
       {productItems.length > 0 && (
         <section>
           <div className="text-center mb-10 max-w-6xl mx-auto">
-            <h2 className="text-4xl font-extrabold tracking-tight mb-4">Trending Products</h2>
+            <h2 className="text-4xl font-extrabold tracking-tight mb-4">{t('TrendingProducts')}</h2>
             <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-              Check out these exciting products that everyone is talking about.
+              {t('TrendingProductsDesc')}
             </p>
           </div>
           <div className="flex justify-center" style={{ height: '700px', position: 'relative' }}>

@@ -40,11 +40,13 @@ export function SignupForm() {
 
       // 4. Send the token and extra profile details to the backend to create tbl_user and tbl_user_profile
       const backendUrl = process.env.NEXT_PUBLIC_BACKEND_BASE_URL;
+      const lang = document.cookie.match(new RegExp('(^| )NEXT_LOCALE=([^;]+)'))?.[2] || 'en';
       const res = await fetch(`${backendUrl}/auth/login`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${idToken}`,
           "Content-Type": "application/json",
+          "Accept-Language": lang
         },
         body: JSON.stringify({
           firstName,
@@ -55,13 +57,15 @@ export function SignupForm() {
       });
 
       if (!res.ok) {
-        throw new Error("Backend authentication failed");
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || "Backend authentication failed");
       }
       
-      toast.success("Account created successfully!");
+      const data = await res.json();
+      toast.success(data.message || "Account created successfully!");
       router.push("/dashboard");
     } catch (err: any) {
-      let errorMessage = "Failed to create account.";
+      let errorMessage = err.message || "Failed to create account.";
       if (err?.code === 'auth/email-already-in-use') {
         errorMessage = "An account with this email already exists.";
       } else if (err?.code === 'auth/weak-password') {
@@ -84,24 +88,28 @@ export function SignupForm() {
       const idToken = await userCredential.user.getIdToken();
 
       const backendUrl = process.env.NEXT_PUBLIC_BACKEND_BASE_URL;
+      const lang = document.cookie.match(new RegExp('(^| )NEXT_LOCALE=([^;]+)'))?.[2] || 'en';
       const res = await fetch(`${backendUrl}/auth/login`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${idToken}`,
           "Content-Type": "application/json",
+          "Accept-Language": lang
         },
         credentials: "include"
       });
 
       if (!res.ok) {
-        throw new Error("Backend authentication failed");
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || "Backend authentication failed");
       }
       
-      toast.success("Signed in with Google successfully!");
+      const data = await res.json();
+      toast.success(data.message || "Signed in with Google successfully!");
       router.push("/dashboard");
     } catch (err: any) {
       if (err?.code !== 'auth/popup-closed-by-user') {
-        toast.error("Failed to sign in with Google.");
+        toast.error(err.message || "Failed to sign in with Google.");
       }
     } finally {
       setIsGoogleLoading(false);

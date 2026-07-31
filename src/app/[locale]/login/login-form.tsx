@@ -32,26 +32,31 @@ export function LoginForm() {
 
       // 3. Send the token to the backend to set the session cookie
       const backendUrl = process.env.NEXT_PUBLIC_BACKEND_BASE_URL;
+      const lang = document.cookie.match(new RegExp('(^| )NEXT_LOCALE=([^;]+)'))?.[2] || 'en';
       const res = await fetch(`${backendUrl}/auth/login`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${idToken}`,
           "Content-Type": "application/json",
+          "Accept-Language": lang
         },
         credentials: "include" // Important to ensure the backend can set the cookie on the browser
       });
 
       if (!res.ok) {
-        throw new Error("Backend authentication failed");
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || "Backend authentication failed");
       }
+      const data = await res.json();
+      toast.success(data.message || "Login successful");
 
       // Redirect to dashboard
       router.push("/dashboard");
     } catch (err: any) {
       // Format common firebase errors or show a generic message
-      let errorMessage = "Failed to sign in. Please check your credentials.";
+      let errorMessage = err.message || "Failed to sign in. Please check your credentials.";
       if (err?.code === 'auth/invalid-credential' || err?.code === 'auth/wrong-password' || err?.code === 'auth/user-not-found') {
-        errorMessage = "Invalid email or password.";
+        errorMessage = "Invalid email or password."; // Firebase error fallback
       }
       toast.error(errorMessage);
     } finally {
@@ -68,23 +73,29 @@ export function LoginForm() {
       const idToken = await userCredential.user.getIdToken();
 
       const backendUrl = process.env.NEXT_PUBLIC_BACKEND_BASE_URL;
+      const lang = document.cookie.match(new RegExp('(^| )NEXT_LOCALE=([^;]+)'))?.[2] || 'en';
       const res = await fetch(`${backendUrl}/auth/login`, {
         method: "POST",
         headers: {
           "Authorization": `Bearer ${idToken}`,
           "Content-Type": "application/json",
+          "Accept-Language": lang
         },
         credentials: "include"
       });
 
       if (!res.ok) {
-        throw new Error("Backend authentication failed");
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || "Backend authentication failed");
       }
+      
+      const data = await res.json();
+      toast.success(data.message || "Login successful");
 
       router.push("/dashboard");
     } catch (err: any) {
       if (err?.code !== 'auth/popup-closed-by-user') {
-        toast.error("Failed to sign in with Google.");
+        toast.error(err.message || "Failed to sign in with Google.");
       }
     } finally {
       setIsGoogleLoading(false);

@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import createMiddleware from 'next-intl/middleware';
+import {routing} from './i18n/routing';
+
+const handleI18nRouting = createMiddleware(routing);
 
 // This function can be marked `async` if using `await` inside
 export function proxy(request: NextRequest) {
   // If the user is trying to access a dashboard route
-  if (request.nextUrl.pathname.startsWith('/dashboard')) {
+  if (request.nextUrl.pathname.includes('/dashboard')) {
     const token = request.cookies.get('access_token')?.value;
 
     if (!token) {
@@ -51,8 +55,8 @@ export function proxy(request: NextRequest) {
     }
   }
 
-  // Allow the request to proceed if valid or not on a protected route
-  return NextResponse.next();
+  // Allow the request to proceed if valid or not on a protected route, and handle i18n
+  return handleI18nRouting(request);
 }
 
 // See "Matching Paths" below to learn more

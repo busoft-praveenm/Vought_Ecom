@@ -1,0 +1,29 @@
+{
+  "Sidebar": {
+    "Overview": "Overview",
+    "Products": "Products",
+    "Orders": "Orders",
+    "Categories": "Categories",
+    "Brands": "Brands",
+    "Customers": "Customers",
+    "ProductsInventory": "Products Inventory",
+    "Warehouses": "Warehouses"
+  },
+  "Topbar": {
+    "SearchPlaceholder": "Search products...",
+    "VoughtIndia": "Vought India",
+    "MyAccount": "My Account",
+    "Profile": "Profile",
+    "Settings": "Settings",
+    "LogOut": "Log out",
+    "Language": "Language"
+  },
+  "Dashboard": {
+    "FeaturedBrands": "Featured Brands",
+    "FeaturedBrandsDesc": "Discover the top brands that make our collection so special.",
+    "DiscoverCategories": "Discover Categories",
+    "DiscoverCategoriesDesc": "Explore our wide range of premium products tailored just for you. Find what you love in our curated collections.",
+    "TrendingProducts": "Trending Products",
+    "TrendingProductsDesc": "Check out these exciting products that everyone is talking about."
+  }
+}
