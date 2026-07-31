@@ -1,4 +1,5 @@
 import { Controller, Get, Query, UseGuards, UseInterceptors, Patch, Param, Body, BadRequestException, Inject } from "@nestjs/common";
+import { I18nContext } from 'nestjs-i18n';
 import { UserDbService } from "@/common/db-services/user-db.service";
 import { FirebaseAuthGuard } from "@/guards/firebase.auth.guard";
 import { RolesGuard } from "@/guards/roles.guard";
@@ -45,12 +46,12 @@ export class UsersController {
     const status = body.status!;
     const userToUpdate = await this.userDbService.findById(Number(id));
     if (!userToUpdate) {
-      throw new BadRequestException('User not found');
+      throw new BadRequestException('messages.ERROR.USER_NOT_FOUND');
     }
 
     const adminEmail = this.configService.get<string>('ADMIN_EMAIL');
     if (userToUpdate.email === adminEmail && status === UserStatus.INACTIVE) {
-      throw new BadRequestException('Cannot deactivate the primary admin user');
+      throw new BadRequestException('messages.ERROR.GENERAL');
     }
 
     const updatedUser = await this.userDbService.updateUser(Number(id), { status });

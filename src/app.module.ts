@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { APP_FILTER } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConfigModule, ConfigService } from '@nestjs/config';
@@ -18,7 +19,9 @@ import { OrdersModule } from './apis/orders/orders.module';
 import { BullModule } from '@nestjs/bullmq';
 import { WarehousesModule } from './apis/warehouses/warehouses.module';
 import { EmailModule } from './apis/email/email.module';
-
+import { I18nModule, AcceptLanguageResolver, QueryResolver, HeaderResolver } from 'nestjs-i18n';
+import * as path from 'path';
+import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -37,6 +40,18 @@ import { EmailModule } from './apis/email/email.module';
           }
         }),
       }),
+    }),
+    I18nModule.forRoot({
+      fallbackLanguage: 'en',
+      loaderOptions: {
+        path: path.join(process.cwd(), 'src/i18n/'),
+        watch: true,
+      },
+      resolvers: [
+        { use: QueryResolver, options: ['lang'] },
+        AcceptLanguageResolver,
+        new HeaderResolver(['x-custom-lang']),
+      ],
     }),
     BullModule.forRootAsync({
       imports: [ConfigModule],
@@ -62,7 +77,13 @@ import { EmailModule } from './apis/email/email.module';
     EmailModule
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_FILTER,
+      useClass: GlobalExceptionFilter,
+    },
+  ],
   exports: []
 })
 export class AppModule {}

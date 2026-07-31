@@ -1,0 +1,16 @@
+{
+  "SUCCESS": {
+    "LOGIN": "Logged in successfully",
+    "LOGOUT": "Logged out successfully",
+    "REGISTER": "User registered successfully",
+    "GENERAL": "Operation successful"
+  },
+  "ERROR": {
+    "SOMETHING_WENT_WRONG": "Something went wrong",
+    "INVALID_CREDENTIALS": "Invalid credentials",
+    "USER_NOT_FOUND": "User not found",
+    "UNAUTHORIZED": "Unauthorized access",
+    "VALIDATION_FAILED": "Validation failed",
+    "GENERAL": "Operation failed"
+  }
+}

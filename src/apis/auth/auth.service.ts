@@ -1,4 +1,5 @@
 import { UserDbService } from "@/common/db-services/user-db.service";
+import { I18nContext } from 'nestjs-i18n';
 import { UserDb } from "@/common/entities/tbl_user.entity";
 import { UserStatus } from "@prisma/client";
 import { FirebaseAuthGuard } from "@/guards/firebase.auth.guard";
@@ -25,7 +26,7 @@ export class AuthService {
 
     try{
       if(!token){
-        throw new UnauthorizedException('Missing token');
+        throw new UnauthorizedException('messages.ERROR.UNAUTHORIZED');
       }
 
       const decoded = await this.fireBaseAuthGuard.verifyToken(token);
@@ -78,13 +79,13 @@ export class AuthService {
         user.status === UserStatus.INACTIVE
       ) {
         throw new UnauthorizedException(
-          'User account inactive',
+          'messages.ERROR.UNAUTHORIZED',
         );
       }
 
       return {
         success: true,
-        message: 'Login successful',
+        message: I18nContext.current()?.t('messages.SUCCESS.LOGIN') || 'Login successful',
         user,
       };
 
@@ -107,7 +108,7 @@ export class AuthService {
       });
       return {
         success: true,
-        message: 'Profile updated successfully',
+        message: I18nContext.current()?.t('messages.SUCCESS.GENERAL') || 'Profile updated successfully',
         user
       };
     } catch (error) {
