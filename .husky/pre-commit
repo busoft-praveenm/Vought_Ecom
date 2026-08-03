@@ -1,0 +1,2 @@
+source ~/.nvm/nvm.sh || true
+npm run test
