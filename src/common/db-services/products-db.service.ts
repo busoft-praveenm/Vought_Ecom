@@ -75,6 +75,7 @@ export class ProductsDbService {
         {
           OR: [
             { name: { contains: search } },
+            { description: { contains: search } },
             { categories: { some: { name: { contains: search } } } },
             { brand: { name: { contains: search } } }
           ]
