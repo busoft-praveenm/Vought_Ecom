@@ -26,6 +26,7 @@ import { GlobalExceptionFilter } from './common/filters/global-exception.filter'
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: process.env.NODE_ENV === 'test' ? '.env.test' : '.env',
     }),
     PrismaModule,
     CacheModule.registerAsync({

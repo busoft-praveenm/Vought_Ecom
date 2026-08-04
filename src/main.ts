@@ -5,6 +5,9 @@ import cookieParser from 'cookie-parser';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 
 async function startapp() {
+  console.log('NODE_ENV IS:', process.env.NODE_ENV);
+  console.log('PROCESS DATABASE_URL IS:', process.env.DATABASE_URL);
+  
   const app = await NestFactory.create(AppModule);
   app.enableCors({
     origin: 'http://localhost:3000',

@@ -77,6 +77,7 @@ export class BrandDbService {
     await this.prisma.brandDb.update({
       where: { id },
       data: {
+        isActive: false,
         deletedAt: new Date()
       }
     });

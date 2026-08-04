@@ -7,7 +7,7 @@ import { Inject, Injectable, UnauthorizedException } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { CACHE_MANAGER } from "@nestjs/cache-manager";
 import type { Cache } from "cache-manager";
-import {v4 as uuidv4} from "uuid";
+import * as crypto from 'crypto';
 
 @Injectable()
 export class AuthService {
@@ -44,7 +44,7 @@ export class AuthService {
 
         user = 
         await this.userDbService.createUser({
-          userUid: uuidv4(),
+          userUid: crypto.randomUUID(),
           firebaseUid: decoded.uid,
           email: decoded.email,
           provider: decoded.firebase?.sign_in_provider,

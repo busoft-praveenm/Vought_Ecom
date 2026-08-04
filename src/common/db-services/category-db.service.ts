@@ -55,17 +55,16 @@ export class CategoryDbService {
 
   async updateCategory(id: number, data: Partial<CategoryDb>): Promise<CategoryDb> {
     if (data.isActive === false) {
-      // Find products that belong to this category AND NO OTHER CATEGORY.
-      const conflictingProducts: { product_id: number }[] = await this.prisma.$queryRaw`
-        SELECT pc.product_id 
+      const conflictingProducts: { B: number }[] = await this.prisma.$queryRaw`
+        SELECT pc.B 
         FROM _product_categories pc 
         JOIN (
-          SELECT product_id 
+          SELECT B 
           FROM _product_categories 
-          GROUP BY product_id 
-          HAVING COUNT(category_id) = 1
-        ) single_cat_products ON pc.product_id = single_cat_products.product_id
-        WHERE pc.category_id = ${id}
+          GROUP BY B 
+          HAVING COUNT(A) = 1
+        ) single_cat_products ON pc.B = single_cat_products.B
+        WHERE pc.A = ${id}
       `;
       if (conflictingProducts.length > 0) {
         throw new BadRequestException('Cannot deactivate category because it is the only category for some products.');
@@ -82,17 +81,16 @@ export class CategoryDbService {
   }
 
   async deleteCategory(id: number): Promise<void> {
-    // Find products that belong to this category AND NO OTHER CATEGORY.
-    const conflictingProducts: { product_id: number }[] = await this.prisma.$queryRaw`
-      SELECT pc.product_id 
+    const conflictingProducts: { B: number }[] = await this.prisma.$queryRaw`
+      SELECT pc.B 
       FROM _product_categories pc 
       JOIN (
-        SELECT product_id 
+        SELECT B 
         FROM _product_categories 
-        GROUP BY product_id 
-        HAVING COUNT(category_id) = 1
-      ) single_cat_products ON pc.product_id = single_cat_products.product_id
-      WHERE pc.category_id = ${id}
+        GROUP BY B 
+        HAVING COUNT(A) = 1
+      ) single_cat_products ON pc.B = single_cat_products.B
+      WHERE pc.A = ${id}
     `;
     if (conflictingProducts.length > 0) {
       throw new BadRequestException('Cannot delete category because it is the only category for some products.');

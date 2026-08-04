@@ -12,6 +12,16 @@ async function seedProducts() {
   await prisma.productsDb.deleteMany();
   await prisma.brandDb.deleteMany();
   await prisma.categoryDb.deleteMany();
+  await prisma.userDb.deleteMany();
+  await prisma.roleDb.deleteMany();
+
+  console.log('Seeding roles...');
+  await prisma.roleDb.createMany({
+    data: [
+      { name: 'admin' },
+      { name: 'user' }
+    ]
+  });
 
   console.log('Seeding brands...');
   const brandIds: number[] = [];

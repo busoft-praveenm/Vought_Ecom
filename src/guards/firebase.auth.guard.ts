@@ -20,6 +20,17 @@ export class FirebaseAuthGuard implements CanActivate {
         );
       }
 
+      // Bypass for E2E testing
+      if (process.env.NODE_ENV === 'test' && token.startsWith('eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0')) {
+        request['user'] = { uid: 'fake-uid', email: 'test@example.com' };
+        
+        const dbUser = await this.userDbService.findByFirebaseUid('fake-uid');
+        if (dbUser) {
+          request['dbUser'] = dbUser;
+        }
+        return true;
+      }
+
       // console.log(
       //   'entering decode token'
       // );
@@ -54,6 +65,9 @@ export class FirebaseAuthGuard implements CanActivate {
   async verifyToken(
     token: string
   ) {
+    if (process.env.NODE_ENV === 'test' && token.startsWith('eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0')) {
+      return { uid: 'fake-uid', email: 'test@example.com' } as DecodedIdToken;
+    }
     return admin
       .auth()
       .verifyIdToken(
