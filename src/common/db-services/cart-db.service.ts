@@ -15,9 +15,20 @@ export class CartDbService {
     });
 
     if (!cart) {
-      cart = await this.prisma.cartDb.create({
-        data: { userId: user.id }
-      });
+      try {
+        cart = await this.prisma.cartDb.create({
+          data: { userId: user.id }
+        });
+      } catch (dbError: any) {
+        if (dbError.code === 'P2002') {
+          cart = await this.prisma.cartDb.findUnique({
+            where: { userId: user.id }
+          });
+          if (!cart) throw dbError;
+        } else {
+          throw dbError;
+        }
+      }
     }
 
     const items = await this.prisma.cartItemDb.findMany({

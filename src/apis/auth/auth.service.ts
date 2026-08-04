@@ -42,36 +42,46 @@ export class AuthService {
         const adminEmail = this.configService.get<string>('ADMIN_EMAIL');
         const roleName = decoded.email === adminEmail ? 'admin' : 'user';
 
-        user = 
-        await this.userDbService.createUser({
-          userUid: crypto.randomUUID(),
-          firebaseUid: decoded.uid,
-          email: decoded.email,
-          provider: decoded.firebase?.sign_in_provider,
-          photoUrl: decoded.picture,
-          profileData: {
-            firstName: body?.firstName || firstName || null,
-            lastName: body?.lastName || lastName || null,
-            mobileNumber: body?.mobileNumber || null
-          }
-        }, roleName);
-
         try {
-          const cacheManagerAny = this.cacheManager as any;
-          const store = cacheManagerAny.store || (cacheManagerAny.stores && cacheManagerAny.stores[0]);
-          
-          let keys: string[] = [];
-          if (store && typeof store.keys === 'function') {
-            keys = await store.keys('*/users/customers*');
-          } else if (store && store.client && typeof store.client.keys === 'function') {
-            keys = await store.client.keys('*/users/customers*');
-          }
+          user = await this.userDbService.createUser({
+            userUid: crypto.randomUUID(),
+            firebaseUid: decoded.uid,
+            email: decoded.email,
+            provider: decoded.firebase?.sign_in_provider,
+            photoUrl: decoded.picture,
+            profileData: {
+              firstName: body?.firstName || firstName || null,
+              lastName: body?.lastName || lastName || null,
+              mobileNumber: body?.mobileNumber || null
+            }
+          }, roleName);
 
-          for (const key of keys) {
-            await this.cacheManager.del(key);
+          try {
+            const cacheManagerAny = this.cacheManager as any;
+            const store = cacheManagerAny.store || (cacheManagerAny.stores && cacheManagerAny.stores[0]);
+            
+            let keys: string[] = [];
+            if (store && typeof store.keys === 'function') {
+              keys = await store.keys('*/users/customers*');
+            } else if (store && store.client && typeof store.client.keys === 'function') {
+              keys = await store.client.keys('*/users/customers*');
+            }
+
+            for (const key of keys) {
+              await this.cacheManager.del(key);
+            }
+          } catch (error) {
+            console.error('Failed to invalidate cache:', error);
           }
-        } catch (error) {
-          console.error('Failed to invalidate cache:', error);
+        } catch (dbError: any) {
+          // Handle race condition where multiple E2E workers try to create the user at the exact same time.
+          // Prisma throws P2002 for Unique constraint failed.
+          if (dbError.code === 'P2002') {
+            user = await this.userDbService.findByFirebaseUid(decoded.uid);
+            if (!user) throw dbError; // Should never happen unless DB is corrupted
+          } else {
+            throw dbError;
+          }
         }
       }
 
