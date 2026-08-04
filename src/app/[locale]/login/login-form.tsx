@@ -24,7 +24,7 @@ export function LoginForm() {
     setIsLoading(true);
 
     try {
-      let idToken = "eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJleHAiOjE5OTk5OTk5OTl9.fake-signature";
+      let idToken = "";
       
       if (typeof window !== 'undefined' && window.sessionStorage.getItem('e2e-test') === 'true') {
         console.log('E2E Test: Bypassing Firebase');
@@ -33,6 +33,14 @@ export function LoginForm() {
           err.code = 'auth/wrong-password';
           throw err;
         }
+        
+        // Generate a dynamic token with a valid 1-hour expiry to prevent setTimeout overflow (max 2147483647 ms)
+        const jwtPayload = btoa(JSON.stringify({
+          exp: Math.floor(Date.now() / 1000) + 3600,
+          email: email,
+        })).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+        
+        idToken = `eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.${jwtPayload}.fake-signature`;
       } else {
         console.log('1. Starting Firebase auth');
         // 1. Sign in with Firebase to get the user

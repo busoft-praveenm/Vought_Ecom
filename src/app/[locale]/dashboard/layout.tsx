@@ -18,7 +18,10 @@ export default async function DashboardLayout({
     try {
       const payloadPart = token.split('.')[1];
       if (payloadPart) {
-        const base64 = payloadPart.replace(/-/g, '+').replace(/_/g, '/');
+        let base64 = payloadPart.replace(/-/g, '+').replace(/_/g, '/');
+        while (base64.length % 4) {
+          base64 += '=';
+        }
         const jsonPayload = decodeURIComponent(
           atob(base64)
             .split('')

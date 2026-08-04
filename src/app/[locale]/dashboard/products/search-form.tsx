@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import { Input } from "@/components/input";
 import { Search, Filter, X } from "lucide-react";
 import { Button } from "@/components/button";
@@ -40,6 +40,8 @@ export function ProductSearch({
     setSelectedBrands(brandStr ? brandStr.split(',') : []);
   }, [searchParams]);
 
+  const pathname = usePathname();
+
   useEffect(() => {
     const handler = setTimeout(() => {
       if (search !== (searchParams.get("search") || "")) {
@@ -54,12 +56,12 @@ export function ProductSearch({
         else params.delete("brand");
 
         params.delete("page");
-        router.push(`?${params.toString()}`);
+        router.push(`${pathname}?${params.toString()}`);
       }
     }, 500);
 
     return () => clearTimeout(handler);
-  }, [search, selectedCategories, selectedBrands, router, searchParams]);
+  }, [search, selectedCategories, selectedBrands, router, searchParams, pathname]);
 
   const applyFilters = (searchVal: string, catVals: string[], brandVals: string[]) => {
     const params = new URLSearchParams(searchParams);
@@ -73,14 +75,17 @@ export function ProductSearch({
     else params.delete("brand");
 
     params.delete("page");
-    router.push(`?${params.toString()}`);
+    router.push(`${pathname}?${params.toString()}`);
   };
 
 
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    applyFilters(search, selectedCategories, selectedBrands);
+    const form = e.target as HTMLFormElement;
+    const searchInput = form.elements.namedItem("search") as HTMLInputElement;
+    const searchVal = searchInput ? searchInput.value : search;
+    applyFilters(searchVal, selectedCategories, selectedBrands);
   };
 
   const toggleCategory = (catId: string) => {
@@ -161,6 +166,7 @@ export function ProductSearch({
         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground mt-0.5" />
         <Input
           type="search"
+          name="search"
           placeholder="Search products..."
           className="h-10 w-full sm:w-[300px] pl-8 bg-background"
           value={search}
@@ -185,6 +191,8 @@ export function ActiveFiltersBreadcrumbs({
   const selectedCategories = categoryStr ? categoryStr.split(',') : [];
   const brandStr = searchParams.get("brand");
   const selectedBrands = brandStr ? brandStr.split(',') : [];
+
+  const pathname = usePathname();
 
   if (selectedCategories.length === 0 && selectedBrands.length === 0) return null;
 
@@ -211,7 +219,7 @@ export function ActiveFiltersBreadcrumbs({
     else params.delete("brand");
 
     params.delete("page");
-    router.push(`?${params.toString()}`);
+    router.push(`${pathname}?${params.toString()}`);
   };
 
   const clearAll = () => {
@@ -222,7 +230,7 @@ export function ActiveFiltersBreadcrumbs({
     params.delete("category");
     params.delete("brand");
     params.delete("page");
-    router.push(`?${params.toString()}`);
+    router.push(`${pathname}?${params.toString()}`);
   };
 
   return (

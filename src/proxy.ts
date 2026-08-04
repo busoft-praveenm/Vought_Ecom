@@ -25,7 +25,10 @@ export function proxy(request: NextRequest) {
       }
 
       // Base64Url decode
-      const base64 = payloadPart.replace(/-/g, '+').replace(/_/g, '/');
+      let base64 = payloadPart.replace(/-/g, '+').replace(/_/g, '/');
+      while (base64.length % 4) {
+        base64 += '=';
+      }
       const jsonPayload = decodeURIComponent(
         atob(base64)
           .split('')
