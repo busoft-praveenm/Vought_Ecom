@@ -30,7 +30,7 @@ These are core features that will significantly improve the immediate functional
 - [ ] **Database Translation (Localization):** Implementing the *Translation Table* pattern we discussed to translate products/categories into Tamil dynamically.
 - [x] **Pagination & Search:** Adding proper pagination limits and full-text search capabilities to the products API so the frontend doesn't load massive payloads.
 - [x] **Validation:** Enforcing strict DTO validation using `class-validator` to ensure data integrity on incoming API requests.
-- [ ] **Inventory Locking:** Crucial for e-commerce to prevent overselling items during the checkout flow (reserving stock while the user pays).
+- [x] **Inventory Locking:** Crucial for e-commerce to prevent overselling items during the checkout flow (reserving stock while the user pays).
 - [ ] **File Upload:** Handling image uploads securely (e.g., via Firebase Storage or AWS S3) for admin product management.
 
 ### Frontend

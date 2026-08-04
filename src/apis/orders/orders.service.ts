@@ -71,6 +71,31 @@ export class OrdersService {
 
     // 5. Save to DB using a transaction
     const savedOrder = await this.prisma.$transaction(async (tx) => {
+      // Re-verify stock and locks inside the transaction
+      const productIds = cart.items.map(i => i.productId);
+      const activeLocks = await tx.inventoryLockDb.groupBy({
+        by: ['productId'],
+        where: {
+          productId: { in: productIds },
+          expiresAt: { gt: new Date() }
+        },
+        _sum: { quantity: true }
+      });
+
+      const lockedQuantityMap = new Map<number, number>();
+      for (const lock of activeLocks) {
+        lockedQuantityMap.set(lock.productId, lock._sum.quantity || 0);
+      }
+
+      for (const item of cart.items) {
+        const lockedQuantity = lockedQuantityMap.get(item.productId) || 0;
+        const availableStock = item.product.stock - lockedQuantity;
+        
+        if (availableStock < item.quantity) {
+          throw new BadRequestException(`Product '${item.product.name}' is out of stock or reserved by others. Please try again later.`);
+        }
+      }
+
       let expectedDeliveryDate: Date | null = null;
       let distanceKm: number | null = null;
 
@@ -97,6 +122,14 @@ export class OrdersService {
               productId: item.productId,
               quantity: item.quantity,
               price: item.product.price
+            }))
+          },
+          inventoryLocks: {
+            create: cart.items.map(item => ({
+              productId: item.productId,
+              userId: userId,
+              quantity: item.quantity,
+              expiresAt: new Date(Date.now() + 15 * 60 * 1000) // 15 minutes lock
             }))
           }
         }
@@ -176,6 +209,11 @@ export class OrdersService {
     if (cart) {
       await this.prisma.cartItemDb.deleteMany({ where: { cartId: cart.id } });
     }
+
+    // Clear inventory locks for this order since stock has been permanently decremented
+    await this.prisma.inventoryLockDb.deleteMany({
+      where: { orderId: order.id }
+    });
 
     return { success: true, orderId: order.id };
   }

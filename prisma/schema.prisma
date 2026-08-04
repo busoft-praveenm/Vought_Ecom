@@ -30,6 +30,7 @@ model UserDb {
   orders      OrderDb[]
   reviews     ProductReviewDb[]
   products    ProductsDb[]
+  inventoryLocks InventoryLockDb[]
 
   @@map("tbl_user")
 }
@@ -122,6 +123,7 @@ model ProductsDb {
   orderItems    OrderItemDb[]
   reviews       ProductReviewDb[]
   warehouseProducts WarehouseProductDb[]
+  inventoryLocks InventoryLockDb[]
 
   @@fulltext([name, description])
   @@map("tbl_products")
@@ -176,8 +178,9 @@ model OrderDb {
 
   warehouseId       Int?      @map("warehouse_id")
   warehouse         WarehouseDb? @relation(fields: [warehouseId], references: [id])
-
+  
   items             OrderItemDb[]
+  inventoryLocks    InventoryLockDb[]
 
   @@map("tbl_order")
 }
@@ -265,4 +268,23 @@ enum OrderStatus {
   ASSIGNED_DELIVERY_AGENT
   OUT_FOR_DELIVERY
   DELIVERED
+}
+
+model InventoryLockDb {
+  id        Int      @id @default(autoincrement())
+  quantity  Int
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  productId Int      @map("product_id")
+  product   ProductsDb @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  userId    Int      @map("user_id")
+  user      UserDb   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  orderId   Int      @map("order_id")
+  order     OrderDb  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([productId, expiresAt])
+  @@map("tbl_inventory_lock")
 }
