@@ -1,5 +1,6 @@
 import { PrismaClient } from '@prisma/client';
-import { v4 as uuidv4 } from 'uuid';
+import * as fs from 'fs';
+import * as path from 'path';
 
 const prisma = new PrismaClient();
 
@@ -9,19 +10,56 @@ async function seedProducts() {
   const productImage = 'https://xelltechnology.com/wp-content/uploads/2022/04/dummy3.jpg';
 
   console.log('Clearing existing data...');
+  // Delete in correct order to avoid foreign key constraints
+  await prisma.notificationDb.deleteMany();
+  await prisma.inventoryLockDb.deleteMany();
+  await prisma.orderItemDb.deleteMany();
+  await prisma.orderDb.deleteMany();
+  await prisma.cartItemDb.deleteMany();
+  await prisma.cartDb.deleteMany();
+  await prisma.warehouseProductDb.deleteMany();
+  await prisma.warehouseDb.deleteMany();
+  await prisma.productReviewDb.deleteMany();
   await prisma.productsDb.deleteMany();
   await prisma.brandDb.deleteMany();
   await prisma.categoryDb.deleteMany();
+  await prisma.userProfileDb.deleteMany();
   await prisma.userDb.deleteMany();
   await prisma.roleDb.deleteMany();
 
   console.log('Seeding roles...');
-  await prisma.roleDb.createMany({
-    data: [
-      { name: 'admin' },
-      { name: 'user' }
-    ]
-  });
+  // Explicit IDs to match our dumped data
+  await prisma.roleDb.create({ data: { id: 1, name: 'admin' } });
+  await prisma.roleDb.create({ data: { id: 2, name: 'user' } });
+
+  console.log('Seeding users and profiles...');
+  const usersDataPath = path.join(__dirname, 'data/users.json');
+  if (fs.existsSync(usersDataPath)) {
+    const usersData = JSON.parse(fs.readFileSync(usersDataPath, 'utf8'));
+    for (const user of usersData) {
+      const { profile, ...userData } = user;
+      await prisma.userDb.create({
+        data: {
+          ...userData,
+          profile: profile ? {
+            create: {
+              firstName: profile.firstName,
+              lastName: profile.lastName,
+              mobileNumber: profile.mobileNumber,
+              billingAddress: profile.billingAddress,
+              deliveryAddress: profile.deliveryAddress,
+              deliveryLat: profile.deliveryLat,
+              deliveryLng: profile.deliveryLng,
+              createdAt: profile.createdAt,
+              updatedAt: profile.updatedAt
+            }
+          } : undefined
+        }
+      });
+    }
+  } else {
+    console.warn('data/users.json not found. Skipping user seeding.');
+  }
 
   console.log('Seeding brands...');
   const brandIds: number[] = [];
@@ -63,11 +101,13 @@ async function seedProducts() {
   }
 
   console.log('Seeding 50 products...');
+  const createdProducts: any[] = [];
   for (let i = 1; i <= 50; i++) {
     const name = `Product ${i}`;
     const description = `This is dummy product ${i}`;
     const price = Math.floor(Math.random() * 900) + 10;
-    const stock = Math.floor(Math.random() * 100) + 1;
+    // We set stock to 0 initially. The warehouse logic will update it.
+    const stock = 0; 
     const sku = `SKU-${Date.now()}-${i}`;
     const productUid = `uid-${Date.now()}-${i}`;
     const brandId = brandIds[i % brandIds.length];
@@ -76,8 +116,10 @@ async function seedProducts() {
     const shuffledCats = [...catIds].sort(() => 0.5 - Math.random());
     const assignedCats = shuffledCats.slice(0, numCats).map(id => ({ id }));
 
-    await prisma.productsDb.create({
+    const p = await prisma.productsDb.create({
       data: {
+        // Force the ID to match 1 to 50 exactly so the warehouse products align
+        id: i,
         name,
         description,
         price,
@@ -92,6 +134,43 @@ async function seedProducts() {
         }
       }
     });
+    createdProducts.push(p);
+  }
+
+  console.log('Seeding warehouses and inventory...');
+  const warehousesDataPath = path.join(__dirname, 'data/warehouses.json');
+  if (fs.existsSync(warehousesDataPath)) {
+    const warehousesData = JSON.parse(fs.readFileSync(warehousesDataPath, 'utf8'));
+    for (const warehouse of warehousesData) {
+      const { warehouseProducts, ...warehouseData } = warehouse;
+      await prisma.warehouseDb.create({
+        data: {
+          ...warehouseData,
+          warehouseProducts: warehouseProducts ? {
+            create: warehouseProducts.map((wp: any) => ({
+              quantity: wp.quantity,
+              productId: wp.productId,
+              createdAt: wp.createdAt,
+              updatedAt: wp.updatedAt
+            }))
+          } : undefined
+        }
+      });
+    }
+
+    // Now recalculate the aggregate stock for all products
+    for (const p of createdProducts) {
+      const allWarehouseProducts = await prisma.warehouseProductDb.findMany({
+        where: { productId: p.id },
+      });
+      const totalStock = allWarehouseProducts.reduce((sum, wp) => sum + wp.quantity, 0);
+      await prisma.productsDb.update({
+        where: { id: p.id },
+        data: { stock: totalStock }
+      });
+    }
+  } else {
+    console.warn('data/warehouses.json not found. Skipping warehouse seeding.');
   }
 
   console.log('Finished seeding database.');

@@ -19,6 +19,7 @@ import { OrdersModule } from './apis/orders/orders.module';
 import { BullModule } from '@nestjs/bullmq';
 import { WarehousesModule } from './apis/warehouses/warehouses.module';
 import { EmailModule } from './apis/email/email.module';
+import { NotificationsModule } from './apis/notifications/notifications.module';
 import { I18nModule, AcceptLanguageResolver, QueryResolver, HeaderResolver } from 'nestjs-i18n';
 import * as path from 'path';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
@@ -75,7 +76,8 @@ import { GlobalExceptionFilter } from './common/filters/global-exception.filter'
     JobsModule,
     OrdersModule,
     WarehousesModule,
-    EmailModule
+    EmailModule,
+    NotificationsModule
   ],
   controllers: [AppController],
   providers: [

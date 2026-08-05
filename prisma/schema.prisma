@@ -31,6 +31,7 @@ model UserDb {
   reviews     ProductReviewDb[]
   products    ProductsDb[]
   inventoryLocks InventoryLockDb[]
+  notifications   NotificationDb[]
 
   @@map("tbl_user")
 }
@@ -287,4 +288,18 @@ model InventoryLockDb {
 
   @@index([productId, expiresAt])
   @@map("tbl_inventory_lock")
+}
+
+model NotificationDb {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  title     String
+  message   String   @db.Text
+  isRead    Boolean  @default(false) @map("is_read")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user      UserDb   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("tbl_notifications")
 }

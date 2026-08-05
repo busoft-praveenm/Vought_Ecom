@@ -4,10 +4,13 @@ import { OrdersController } from './orders.controller';
 import { DbServicesModule } from '@/common/db-services/db-services.module';
 import { EmailModule } from '../email/email.module';
 
+import { NotificationsModule } from '../notifications/notifications.module';
+
 @Module({
   imports: [
     DbServicesModule,
-    EmailModule
+    EmailModule,
+    NotificationsModule
   ],
   controllers: [OrdersController],
   providers: [OrdersService],

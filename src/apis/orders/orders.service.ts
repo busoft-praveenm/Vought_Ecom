@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '@/prisma/prisma.service';
 import { OrderStatus, WarehouseDb } from '@prisma/client';
 import { EmailService } from '../email/email.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import Razorpay from 'razorpay';
 import * as crypto from 'crypto';
 
@@ -14,6 +15,7 @@ export class OrdersService {
     private readonly prisma: PrismaService,
     private configService: ConfigService,
     private emailService: EmailService,
+    private readonly notificationsService: NotificationsService,
   ) {
     this.razorpay = new Razorpay({
       key_id: this.configService.get<string>('RAZORPAY_KEY_ID') || '',
@@ -53,6 +55,11 @@ export class OrdersService {
     let minDistance = Infinity;
     
     const user = await this.prisma.userDb.findUnique({ where: { id: userId }, include: { profile: true } });
+    
+    if (!user?.profile?.billingAddress || !user?.profile?.deliveryAddress) {
+      throw new BadRequestException('ADDRESS_REQUIRED');
+    }
+
     const userLat = user?.profile?.deliveryLat;
     const userLng = user?.profile?.deliveryLng;
 
@@ -215,6 +222,13 @@ export class OrdersService {
       where: { orderId: order.id }
     });
 
+    // Send Notification
+    await this.notificationsService.notifyUser(
+      userId,
+      'Order Confirmed',
+      `Your order #${order.id} has been placed successfully and is being processed.`
+    );
+
     return { success: true, orderId: order.id };
   }
 
@@ -252,6 +266,13 @@ export class OrdersService {
       this.emailService.queueOrderOutForDelivery(updatedOrder as any);
     }
     
+    // Send Notification
+    await this.notificationsService.notifyUser(
+      order.userId,
+      'Order Status Updated',
+      `Your order #${order.id} status has been updated to ${status}.`
+    );
+
     return { success: true, orderId: updatedOrder.id, status: updatedOrder.status };
   }
 

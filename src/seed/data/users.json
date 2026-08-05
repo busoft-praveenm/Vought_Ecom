@@ -1,0 +1,58 @@
+[
+  {
+    "id": 1,
+    "userUid": "6f503166-c261-4618-9b29-057dacee781e",
+    "firebaseUid": "Ld3liVo6zocHPtZwuMsJ3jwVWr73",
+    "email": "praveenlee1707@gmail.com",
+    "provider": "google.com",
+    "status": "ACTIVE",
+    "photoUrl": "https://lh3.googleusercontent.com/a/ACg8ocLO83dKuH9UzXbUBdDzaJX2V25U3qubFu5FOwuseHTJtd-VNApy=s96-c",
+    "isActive": true,
+    "isDeleted": false,
+    "createdAt": "2026-08-04T10:48:50.920Z",
+    "updatedAt": "2026-08-04T10:48:50.920Z",
+    "deletedAt": null,
+    "roleId": 1,
+    "profile": {
+      "id": 1,
+      "firstName": "praveen",
+      "lastName": "murugesan",
+      "mobileNumber": "",
+      "billingAddress": "Beyond Universe Software Technologies, 107, J.J. Street, Industrial Estate, Perungudi, Chennai, Tamil Nadu 600096, India",
+      "deliveryAddress": "Beyond Universe Software Technologies, 107, J.J. Street, Industrial Estate, Perungudi, Chennai, Tamil Nadu 600096, India",
+      "deliveryLat": "12.9549027",
+      "deliveryLng": "80.2477706",
+      "createdAt": "2026-08-04T10:48:50.920Z",
+      "updatedAt": "2026-08-05T07:15:46.538Z",
+      "userId": 1
+    }
+  },
+  {
+    "id": 2,
+    "userUid": "78b64056-8355-44e0-8dfb-e5ae49186a64",
+    "firebaseUid": "AifdNcxRieRe2WXf2FZ5ldgXDHr1",
+    "email": "praveenmbusofttech@gmail.com",
+    "provider": "google.com",
+    "status": "ACTIVE",
+    "photoUrl": "https://lh3.googleusercontent.com/a/ACg8ocKHqBRkM_5e6nF8iEAdTlSCiV7I3kopc4pdI1aeKEHEk9g0ZlU=s96-c",
+    "isActive": true,
+    "isDeleted": false,
+    "createdAt": "2026-08-05T05:35:51.980Z",
+    "updatedAt": "2026-08-05T05:35:51.980Z",
+    "deletedAt": null,
+    "roleId": 2,
+    "profile": {
+      "id": 2,
+      "firstName": "Praveen",
+      "lastName": "M",
+      "mobileNumber": "",
+      "billingAddress": "11/447, E V P Prabhu Ave, Kamakshiamman Nagar Layout, Iyyappanthangal, Chennai, Tamil Nadu 600122, India",
+      "deliveryAddress": "11/447, E V P Prabhu Ave, Kamakshiamman Nagar Layout, Iyyappanthangal, Chennai, Tamil Nadu 600122, India",
+      "deliveryLat": "13.0264974",
+      "deliveryLng": "80.1315532",
+      "createdAt": "2026-08-05T05:35:51.980Z",
+      "updatedAt": "2026-08-05T06:59:23.058Z",
+      "userId": 2
+    }
+  }
+]

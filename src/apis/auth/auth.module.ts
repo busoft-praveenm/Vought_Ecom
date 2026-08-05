@@ -8,7 +8,7 @@ import { AuthController } from "./auth.controller";
 @Module({
   imports: [DbServicesModule],
   controllers: [AuthController],
-  exports: [AuthService],
+  exports: [AuthService, FirebaseAuthGuard],
   providers: [AuthService, FirebaseAuthGuard]
 })
 export class AuthModule{}
