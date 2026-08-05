@@ -3,11 +3,19 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createWarehouseAction } from "@/app/actions/warehouses";
+import { Input } from "@/components/input";
+import { GoogleMapPicker, LocationData } from "@/components/google-map-picker";
+import { MapPin } from "lucide-react";
+import { Button } from "@/components/button";
 
 export default function NewWarehousePage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showMap, setShowMap] = useState(false);
+  const [address, setAddress] = useState("");
+  const [lat, setLat] = useState("");
+  const [lng, setLng] = useState("");
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -33,6 +41,28 @@ export default function NewWarehousePage() {
     }
   };
 
+  if (showMap) {
+    return (
+      <div className="w-full max-w-2xl mx-auto">
+        <h1 className="text-3xl font-bold tracking-tight mb-6">Add New Warehouse</h1>
+        <div className="bg-card p-6 rounded-lg border">
+          <h3 className="text-lg font-semibold mb-4">Select Location on Map</h3>
+          <GoogleMapPicker 
+            initialLat={parseFloat(lat) || undefined}
+            initialLng={parseFloat(lng) || undefined}
+            onCancel={() => setShowMap(false)}
+            onLocationSelect={(location: LocationData) => {
+              setAddress(location.address);
+              setLat(location.lat.toString());
+              setLng(location.lng.toString());
+              setShowMap(false);
+            }}
+          />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="w-full max-w-2xl mx-auto">
       <h1 className="text-3xl font-bold tracking-tight mb-6">Add New Warehouse</h1>
@@ -46,45 +76,56 @@ export default function NewWarehousePage() {
       <form onSubmit={handleSubmit} className="space-y-6 bg-card p-6 rounded-lg border">
         <div>
           <label className="block text-sm font-medium mb-2">Warehouse Name</label>
-          <input
+          <Input
             name="name"
             required
-            className="w-full bg-zinc-900 border border-zinc-800 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
             placeholder="e.g. Chennai North Hub"
           />
         </div>
 
         <div>
-          <label className="block text-sm font-medium mb-2">Address</label>
+          <div className="flex items-center justify-between mb-2">
+            <label className="block text-sm font-medium">Address</label>
+            <Button type="button" variant="outline" size="sm" onClick={() => setShowMap(true)} className="h-8">
+              <MapPin className="w-4 h-4 mr-1" />
+              Pick on Map
+            </Button>
+          </div>
           <textarea
             name="address"
             required
             rows={3}
-            className="w-full bg-zinc-900 border border-zinc-800 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-            placeholder="Full physical address"
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
+            className="flex min-h-[80px] w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+            placeholder="Full physical address or pick from map"
           />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium mb-2">Latitude</label>
-            <input
+            <Input
               name="lat"
               type="number"
               step="any"
               required
-              className="w-full bg-zinc-900 border border-zinc-800 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary font-mono"
+              value={lat}
+              onChange={(e) => setLat(e.target.value)}
+              className="font-mono"
               placeholder="13.0827"
             />
           </div>
           <div>
             <label className="block text-sm font-medium mb-2">Longitude</label>
-            <input
+            <Input
               name="lng"
               type="number"
               step="any"
               required
-              className="w-full bg-zinc-900 border border-zinc-800 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary font-mono"
+              value={lng}
+              onChange={(e) => setLng(e.target.value)}
+              className="font-mono"
               placeholder="80.2707"
             />
           </div>
@@ -92,13 +133,12 @@ export default function NewWarehousePage() {
 
         <div>
           <label className="block text-sm font-medium mb-2">Processing Time (Hours)</label>
-          <input
+          <Input
             name="processingTimeHours"
             type="number"
             min="0"
             required
             defaultValue="24"
-            className="w-full bg-zinc-900 border border-zinc-800 rounded-md px-4 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
           />
           <p className="text-xs text-muted-foreground mt-2">
             Time required to pack and dispatch an order from this warehouse. This will be added to the estimated transit time.

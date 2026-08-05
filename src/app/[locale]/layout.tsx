@@ -15,6 +15,7 @@ export const metadata: Metadata = {
 import { Toaster } from "@/components/toaster";
 import {NextIntlClientProvider} from 'next-intl';
 import {getMessages} from 'next-intl/server';
+import { SocketProvider } from "@/providers/socket-provider";
 export default async function RootLayout({
   children,
   params
@@ -31,8 +32,10 @@ export default async function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <NextIntlClientProvider messages={messages}>
-          {children}
-          <Toaster />
+          <SocketProvider>
+            {children}
+            <Toaster />
+          </SocketProvider>
         </NextIntlClientProvider>
       </body>
     </html>

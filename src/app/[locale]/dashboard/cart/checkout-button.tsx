@@ -56,7 +56,12 @@ export default function CheckoutButton({ disabled, userEmail, userPhone, userNam
       });
       rzp.open();
     } catch (error: any) {
-      toast.error(error.message || "Failed to initiate checkout");
+      if (error.message === 'ADDRESS_REQUIRED') {
+        toast.error("Please fill in your billing and delivery address before placing an order.", { duration: 5000 });
+        router.push('/dashboard/profile');
+      } else {
+        toast.error(error.message || "Failed to initiate checkout");
+      }
     } finally {
       setLoading(false);
     }

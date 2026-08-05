@@ -63,6 +63,7 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
   const currencySymbol = product.currency === 'INR' ? '₹' : '$';
 
   let hasReviewed = false;
+  let isInCart = false;
   if (token) {
     try {
       const payloadBase64 = token.split('.')[1];
@@ -73,6 +74,21 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
       }
     } catch (e) {
       console.error("Failed to decode token", e);
+    }
+
+    try {
+      const cartRes = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/cart`, {
+        headers: { "Cookie": `access_token=${token}` },
+        cache: 'no-store'
+      });
+      if (cartRes.ok) {
+        const cartData = await cartRes.json();
+        if (cartData?.items && Array.isArray(cartData.items)) {
+          isInCart = cartData.items.some((item: any) => item.productId === Number(product.id));
+        }
+      }
+    } catch (e) {
+      console.error("Failed to fetch cart", e);
     }
   }
 
@@ -134,17 +150,26 @@ export default async function ProductDetailsPage({ params }: { params: Promise<{
           </p>
 
           <div className="mt-auto pt-4 border-t border-border/50">
-            <form action={addToCart.bind(null, Number(product.id), 1)}>
-              <Button
-                type="submit"
-                size="lg"
-                className="w-full sm:w-auto px-8"
-                disabled={product.stock <= 0}
-              >
-                <ShoppingCart className="w-5 h-5 mr-2" />
-                Add to Cart
-              </Button>
-            </form>
+            {isInCart ? (
+              <Link href="/dashboard/cart">
+                <Button size="lg" className="w-full sm:w-auto px-8" variant="default">
+                  <ShoppingCart className="w-5 h-5 mr-2" />
+                  Go to Cart
+                </Button>
+              </Link>
+            ) : (
+              <form action={addToCart.bind(null, Number(product.id), 1)}>
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="w-full sm:w-auto px-8"
+                  disabled={product.stock <= 0}
+                >
+                  <ShoppingCart className="w-5 h-5 mr-2" />
+                  Add to Cart
+                </Button>
+              </form>
+            )}
           </div>
         </div>
       </div>

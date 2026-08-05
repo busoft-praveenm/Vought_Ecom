@@ -44,6 +44,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
           error: "!bg-red-500 !text-white !border-red-600 !shadow-lg",
           success: "!bg-green-500 !text-black !border-green-600 !shadow-lg",
           info: "!bg-yellow-200 !text-black !border-yellow-300 !shadow-lg",
+          closeButton: "hover:!bg-red-500 hover:!text-white hover:!border-red-500 transition-colors",
         },
       }}
       {...props}

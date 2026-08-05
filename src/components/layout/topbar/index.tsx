@@ -17,12 +17,16 @@ import {
   DropdownMenuGroup,
 } from "@/components/dropdown-menu";
 
+import { useSocket } from "@/providers/socket-provider";
+import { auth } from "@/firebase/auth";
+
 export const Topbar = ({ cartCount = 0 }: { cartCount?: number }) => {
   const t = useTranslations("Topbar");
   const router = useRouter();
   const pathname = usePathname();
   const { toggle, isOpen } = useSidebar();
   const [lang, setLang] = React.useState('en');
+  const { unreadCount, notifications, fetchNotifications } = useSocket();
 
   React.useEffect(() => {
     const match = document.cookie.match(new RegExp('(^| )NEXT_LOCALE=([^;]+)'));
@@ -120,10 +124,58 @@ export const Topbar = ({ cartCount = 0 }: { cartCount?: number }) => {
             <span className="sr-only">Cart</span>
           </Button>
         </Link>
-        <Button variant="ghost" size="icon" className="rounded-full text-zinc-400 hover:text-zinc-50 hover:bg-zinc-800/50">
-          <Bell className="h-5 w-5" />
-          <span className="sr-only">Notifications</span>
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger render={
+            <Button variant="ghost" size="icon" className="relative rounded-full text-zinc-400 hover:text-zinc-50 hover:bg-zinc-800/50 data-[state=open]:bg-zinc-800/50 data-[state=open]:text-zinc-50 cursor-pointer">
+              <Bell className="h-5 w-5" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 flex h-[22px] min-w-[22px] px-1 items-center justify-center rounded-full bg-[#FF9933] text-[12px] font-black text-black shadow-md border border-[#FF9933]">
+                  {unreadCount}
+                </span>
+              )}
+              <span className="sr-only">Notifications</span>
+            </Button>
+          } />
+          <DropdownMenuContent align="end" className="w-80 max-h-96 overflow-y-auto">
+            <DropdownMenuGroup>
+              <div className="flex justify-between items-center px-2 py-1.5">
+                <DropdownMenuLabel className="px-0">Notifications</DropdownMenuLabel>
+                {unreadCount > 0 && (
+                  <Button variant="ghost" className="h-auto p-0 text-xs text-[#FF9933]" onClick={async () => {
+                    const token = await auth.currentUser?.getIdToken();
+                    await fetch(`${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/notifications/all/read`, {
+                      method: 'PATCH',
+                      headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    fetchNotifications();
+                  }}>
+                    Mark all as read
+                  </Button>
+                )}
+              </div>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+            {notifications.length === 0 ? (
+              <div className="p-4 text-center text-sm text-muted-foreground">No new notifications</div>
+            ) : (
+              notifications.map((notif, idx) => (
+                <DropdownMenuItem key={idx} className={`flex flex-col items-start gap-1 p-3 cursor-pointer ${!notif.isRead ? 'bg-muted/80 font-semibold' : ''}`} onClick={async () => {
+                  if (!notif.isRead) {
+                    const token = await auth.currentUser?.getIdToken();
+                    await fetch(`${process.env.NEXT_PUBLIC_BACKEND_BASE_URL}/notifications/${notif.id}/read`, {
+                      method: 'PATCH',
+                      headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    fetchNotifications();
+                  }
+                }}>
+                  <div className={`text-sm ${!notif.isRead ? 'text-foreground' : 'text-muted-foreground'}`}>{notif.title}</div>
+                  <div className="text-xs text-muted-foreground line-clamp-2">{notif.message}</div>
+                </DropdownMenuItem>
+              ))
+            )}
+          </DropdownMenuContent>
+        </DropdownMenu>
         <Button variant="ghost" size="icon" className="rounded-full text-zinc-400 hover:text-zinc-50 hover:bg-zinc-800/50">
           <Settings className="h-5 w-5" />
           <span className="sr-only">{t('Settings')}</span>

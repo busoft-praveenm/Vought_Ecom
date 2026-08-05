@@ -4,9 +4,16 @@ import { notFound } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/card";
 import { Package, Save } from "lucide-react";
 import Image from "next/image";
+import { Input } from "@/components/input";
 
-export default async function WarehouseDetailPage({ params }: { params: { id: string } }) {
-  const warehouseId = params.id;
+export default async function WarehouseDetailPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = await params;
+  const warehouseId = resolvedParams.id;
+  
+  if (!warehouseId) {
+    notFound();
+  }
+
   const warehouse = await getWarehouseAction(warehouseId);
   if (!warehouse || !warehouse.id) {
     notFound();
@@ -47,21 +54,21 @@ export default async function WarehouseDetailPage({ params }: { params: { id: st
             <CardTitle className="text-lg">Warehouse Details</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 text-sm">
-            <div className="flex justify-between border-b border-zinc-800 pb-2">
+            <div className="flex justify-between border-b border-border pb-2">
               <span className="text-muted-foreground">Status</span>
               <span className={warehouse.isActive ? "text-green-500" : "text-red-500"}>
                 {warehouse.isActive ? "Active" : "Inactive"}
               </span>
             </div>
-            <div className="flex justify-between border-b border-zinc-800 pb-2">
+            <div className="flex justify-between border-b border-border pb-2">
               <span className="text-muted-foreground">Latitude</span>
               <span className="font-mono">{warehouse.lat}</span>
             </div>
-            <div className="flex justify-between border-b border-zinc-800 pb-2">
+            <div className="flex justify-between border-b border-border pb-2">
               <span className="text-muted-foreground">Longitude</span>
               <span className="font-mono">{warehouse.lng}</span>
             </div>
-            <div className="flex justify-between border-b border-zinc-800 pb-2">
+            <div className="flex justify-between border-b border-border pb-2">
               <span className="text-muted-foreground">Processing Time</span>
               <span>{warehouse.processingTimeHours} hours</span>
             </div>
@@ -76,8 +83,8 @@ export default async function WarehouseDetailPage({ params }: { params: { id: st
           <CardContent>
             <div className="space-y-4">
               {products.map((product: any) => (
-                <div key={product.id} className="flex items-center gap-4 p-3 bg-zinc-900/50 rounded-lg border border-zinc-800/50">
-                  <div className="w-12 h-12 relative rounded bg-zinc-800 overflow-hidden shrink-0">
+                <div key={product.id} className="flex items-center gap-4 p-3 bg-muted/50 rounded-lg border border-border/50">
+                  <div className="w-12 h-12 relative rounded bg-muted overflow-hidden shrink-0">
                     <Image
                       src={product.imageUrl || `https://picsum.photos/seed/${product.id}/100/100`}
                       alt={product.name}
@@ -93,12 +100,12 @@ export default async function WarehouseDetailPage({ params }: { params: { id: st
                     <input type="hidden" name="productId" value={product.id} />
                     <div className="flex items-center gap-2">
                       <span className="text-xs text-muted-foreground hidden sm:inline">Qty:</span>
-                      <input
+                      <Input
                         type="number"
                         name="quantity"
                         min="0"
                         defaultValue={inventoryMap[product.id] || 0}
-                        className="w-20 bg-zinc-950 border border-zinc-800 rounded px-2 py-1 text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+                        className="w-20 h-8"
                       />
                     </div>
                     <button
