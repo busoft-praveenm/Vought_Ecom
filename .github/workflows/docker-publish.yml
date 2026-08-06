@@ -1,7 +1,9 @@
 name: Publish Backend Docker Image
 
 on:
-  workflow_dispatch:
+  push:
+    tags:
+      - 'backend-v*'
 
 jobs:
   push_to_registry:
