@@ -4,7 +4,7 @@ WORKDIR /app
 
 # Install dependencies (including dev deps for building)
 COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile
+RUN yarn install
 
 # Copy the rest of the application
 COPY . .
@@ -23,7 +23,7 @@ ENV NODE_ENV production
 
 # Install only production dependencies
 COPY package.json yarn.lock ./
-RUN yarn install --frozen-lockfile --production
+RUN yarn install --production
 
 # Copy built application and prisma
 COPY --from=builder /app/dist ./dist
