@@ -9,7 +9,7 @@ import { CardContent } from "@/components/card";
 import { toast } from "sonner";
 import { updateProfileAction } from "./actions";
 import { GoogleMapPicker, LocationData } from "@/components/google-map-picker";
-import { Textarea } from "@/components/input"; // Assuming Input can be a textarea or we can just use normal textarea/input
+
 import { MapPin } from "lucide-react";
 
 export function ProfileForm({ user, profile }: { user: any; profile: any }) {
