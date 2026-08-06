@@ -129,7 +129,7 @@ export default function Carousel({
     }
   }, [itemsForRender.length, loop, position]);
 
-  const effectiveTransition = isJumping ? { duration: 0 } : SPRING_OPTIONS;
+  const effectiveTransition: any = isJumping ? { duration: 0 } : SPRING_OPTIONS;
 
   const handleAnimationStart = () => {
     setIsAnimating(true);
@@ -225,7 +225,7 @@ export default function Carousel({
         onAnimationStart={handleAnimationStart}
         onAnimationComplete={handleAnimationComplete}
       >
-        {itemsForRender.map((item, index) => (
+        {itemsForRender.map((item: any, index: number) => (
           <CarouselItem
             key={`${item?.id ?? index}-${index}`}
             item={item}
@@ -240,7 +240,7 @@ export default function Carousel({
       </motion.div>
       <div className={`carousel-indicators-container ${round ? 'round' : ''}`}>
         <div className="carousel-indicators">
-          {items.map((_, index) => (
+          {items.map((_: any, index: number) => (
             <motion.button
               type="button"
               key={index}
