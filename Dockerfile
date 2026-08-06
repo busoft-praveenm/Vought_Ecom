@@ -4,6 +4,7 @@ WORKDIR /app
 
 # Install dependencies (including dev deps for building)
 COPY package.json yarn.lock ./
+RUN npm pkg delete scripts.prepare || true
 RUN yarn install
 
 # Copy the rest of the application
@@ -23,6 +24,7 @@ ENV NODE_ENV production
 
 # Install only production dependencies
 COPY package.json yarn.lock ./
+RUN npm pkg delete scripts.prepare || true
 RUN yarn install --production
 
 # Copy built application and prisma
