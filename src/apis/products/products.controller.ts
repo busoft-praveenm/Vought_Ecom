@@ -1,8 +1,16 @@
-import { Controller, Get, Injectable, Query, UseGuards } from "@nestjs/common";
+import { Controller, Get, Post, Patch, Delete, Body, Injectable, Param, Query, UseGuards, UseInterceptors, Req } from "@nestjs/common";
 import { ProductsService } from "./products.service";
+import { CreateProductDto } from "./dto/create-product.dto";
+import { UpdateProductDto } from "./dto/update-product.dto";
 import { FirebaseAuthGuard } from "@/guards/firebase.auth.guard";
+import { RolesGuard } from "@/guards/roles.guard";
+import { Roles } from "@/decorators/roles.decorator";
+import { CacheInterceptor, CacheKey, CacheTTL } from "@nestjs/cache-manager";
+import { ApiTags, ApiBearerAuth } from "@nestjs/swagger";
+import { SwaggerGetProducts, SwaggerGetRandomProducts, SwaggerGetProduct, SwaggerCreateProduct, SwaggerUpdateProduct, SwaggerDeleteProduct } from "./products.swagger";
 
-
+@ApiBearerAuth()
+@ApiTags('Products')
 @Controller('products')
 export class ProductsController {
 
@@ -11,12 +19,60 @@ export class ProductsController {
   ){}
 
   @UseGuards(FirebaseAuthGuard)
+  @UseInterceptors(CacheInterceptor)
+  @CacheTTL(300000) // 5 minutes
+  @SwaggerGetProducts()
   @Get()
   async getProducts(
     @Query('page') page = '1',
     @Query('limit') limit = '10',
-    @Query('search') search = ''
+    @Query('search') search = '',
+    @Query('category') category = '',
+    @Query('brand') brand = '',
+    @Req() req: any
   ){
-    return this.productsService.getProducts(Number(page),Number(limit),search);
+    const isAdmin = req.dbUser?.role?.name === 'admin';
+    return this.productsService.getProducts(Number(page),Number(limit),search, category, brand, isAdmin);
+  }
+
+  @SwaggerGetRandomProducts()
+  @Get('random')
+  async getRandomProducts(@Query('limit') limit = '5') {
+    // Note: We bypass ProductsService here for simplicity, 
+    // since the other random methods access DbService directly or we can add it to ProductsService
+    // Let's add it to ProductsService instead. Wait, ProductsController uses ProductsService, not ProductsDbService.
+    // I need to check ProductsService if I should add it there.
+    return this.productsService.getRandomProducts(Number(limit));
+  }
+
+  @UseGuards(FirebaseAuthGuard)
+  @SwaggerGetProduct()
+  @Get(':id')
+  async getProduct(@Param('id') id: string) {
+    return this.productsService.getProduct(Number(id));
+  }
+
+  @UseGuards(FirebaseAuthGuard, RolesGuard)
+  @Roles('admin')
+  @SwaggerCreateProduct()
+  @Post()
+  async createProduct(@Body() createProductDto: CreateProductDto) {
+    return this.productsService.createProduct(createProductDto);
+  }
+
+  @UseGuards(FirebaseAuthGuard, RolesGuard)
+  @Roles('admin')
+  @SwaggerUpdateProduct()
+  @Patch(':id')
+  async updateProduct(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
+    return this.productsService.updateProduct(Number(id), updateProductDto);
+  }
+
+  @UseGuards(FirebaseAuthGuard, RolesGuard)
+  @Roles('admin')
+  @SwaggerDeleteProduct()
+  @Delete(':id')
+  async deleteProduct(@Param('id') id: string) {
+    return this.productsService.deleteProduct(Number(id));
   }
 }

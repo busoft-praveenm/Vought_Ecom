@@ -1,4 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, DeleteDateColumn } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, DeleteDateColumn, ManyToOne, JoinColumn, OneToOne } from "typeorm";
+import { RoleDb } from "./tbl_role.entity";
+import { UserProfileDb } from "./tbl_user_profile.entity";
 
 export enum UserStatus {
   "ACTIVE"="active",
@@ -9,7 +11,7 @@ export enum UserStatus {
 @Entity('tbl_user')
 export class UserDb {
 
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn('increment', { type: 'int' })
   id: number;
 
   @Column({ unique: true })
@@ -21,14 +23,12 @@ export class UserDb {
   @Column({ nullable: false, unique: true })
   email: string;
 
-  @Column({ nullable: true })
-  firstName: string;
+  @OneToOne(() => UserProfileDb, profile => profile.user, { cascade: true, eager: true })
+  profile: UserProfileDb;
 
-  @Column({ nullable: true })
-  lastName: string;
-
-  @Column({ nullable: true })
-  role: string;
+  @ManyToOne(() => RoleDb, role => role.users, { nullable: true, eager: true })
+  @JoinColumn({ name: 'role_id' })
+  role: RoleDb;
 
   @Column({ nullable: true })
   provider: string;

@@ -1,22 +1,34 @@
 import { Module } from "@nestjs/common";
-import { UserDb } from "../entities/tbl_user.entity";
 import { UserDbService } from "./user-db.service";
-import { TypeOrmModule } from "@nestjs/typeorm";
-import { ProductsDb } from "../entities/tbl_products.entity";
 import { ProductsDbService } from "./products-db.service";
+import { ReviewsDbService } from "./reviews-db.service";
+import { CartDbService } from "./cart-db.service";
+import { CategoryDbService } from './category-db.service';
+import { BrandDbService } from "./brand-db.service";
+import { BullModule } from '@nestjs/bullmq';
 
 @Module({
-  imports:[
-    TypeOrmModule.forFeature([
-      UserDb,
-      ProductsDb
-    ])
+  imports: [
+    BullModule.registerQueue(
+      { name: 'cascade-deletion' },
+      { name: 'review-aggregation' }
+    )
   ],
-  providers: [UserDbService, ProductsDbService],
+  providers: [
+    UserDbService, 
+    ProductsDbService, 
+    ReviewsDbService,
+    CartDbService,
+    CategoryDbService,
+    BrandDbService
+  ],
   exports: [
-    TypeOrmModule,
     UserDbService,
-    ProductsDbService
+    ProductsDbService,
+    ReviewsDbService,
+    CartDbService,
+    CategoryDbService,
+    BrandDbService
   ]
 })
 export class DbServicesModule{}
